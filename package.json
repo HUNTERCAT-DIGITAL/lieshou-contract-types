@@ -25,7 +25,7 @@
     "openapi-typescript": "^7.13.0",
     "typescript": "5.6.3",
     "typescript-eslint": "^8.15.0",
-    "@lieshoucloud/config": "workspace:*"
+    "@lieshoucloud/contract-config": "workspace:*"
   },
   "dependencies": {
     "dayjs": "^1.11.23"
