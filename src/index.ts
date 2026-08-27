@@ -9,7 +9,7 @@
  *   自动生成契约快照（gen:api:l3 脚本，以后端为事实源；仅作契约参考，业务代码请走 business 层）
  *
  * 注意：`export *` 遇同名符号（如 STATUS_META）静默跳过，不导出；
- * 需要时按深路径 `@lieshoucloud/types/business/<module>` 引用。
+ * 需要时按深路径 `@lieshoucloud/contract-types/business/<module>` 引用。
  */
 
 // -------- 通用工具类型 --------
@@ -64,7 +64,7 @@ export * from "./business/supply";
 export * from "./business/tenant";
 
 // —— 含同名符号（STATUS_META / ContactLetter / LetterStatus / LETTER_STATUS_META）的模块：
-//    显式导出，冲突符号不导出（需用时走深路径 @lieshoucloud/types/business/<module>） ——
+//    显式导出，冲突符号不导出（需用时走深路径 @lieshoucloud/contract-types/business/<module>） ——
 export type { CustomerStatus, Customer, CreateCustomerRequest, UpdateCustomerRequest } from "./business/customer";
 export type { DispatchStatus, DispatchRecord, CreateDispatchRequest } from "./business/dispatch";
 export type {
