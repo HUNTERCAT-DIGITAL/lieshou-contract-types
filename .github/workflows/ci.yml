@@ -23,4 +23,4 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run typecheck && pnpm run build && pnpm run lint
       - run: pnpm run test
-        continue-on-error: true
+      - run: pnpm run check:contract

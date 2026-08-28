@@ -9,6 +9,13 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    // 契约检查脚本（node 环境，无浏览器 globals）
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: { process: "readonly", console: "readonly" },
+    },
+  },
+  {
     files: ["src/**/*.{ts,tsx}"],
     rules: {
       "@typescript-eslint/no-unused-vars": [
