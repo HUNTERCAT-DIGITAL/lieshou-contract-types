@@ -67,6 +67,7 @@ export * from "./business/tenant";
 //    显式导出，冲突符号不导出（需用时走深路径 @lieshoucloud/contract-types/business/<module>） ——
 export type { CustomerStatus, Customer, CreateCustomerRequest, UpdateCustomerRequest } from "./business/customer";
 export type { DispatchStatus, DispatchRecord, CreateDispatchRequest } from "./business/dispatch";
+export { formatSlot } from "./business/dispatch";
 export type {
   TeacherStatus,
   Teacher,
@@ -97,6 +98,7 @@ export type {
   FollowUpFilter,
   FOLLOW_UP_FILTER_META,
 } from "./business/customerSuccess";
+export { isSystemTemplate, fillTemplatePlaceholder, followUpTone } from "./business/customerSuccess";
 export type {
   CaseType,
   CaseStatus,
@@ -197,3 +199,4 @@ export type {
   GOV_SEVERITY_META,
   GOV_CATEGORY_OPTIONS,
 } from "./business/legal";
+export { stageIndex, healthTone, minuteToTime, formatDateCN } from "./business/legal";
