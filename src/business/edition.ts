@@ -43,6 +43,17 @@ export interface EditionRouteMenu {
   order?: number;
   /** 同 group 的菜单项收进分组子菜单 */
   group?: string;
+  /** 可见角色列表（缺省 = 所有登录用户可见；后台端与 CurrentUser.roles 求交集过滤） */
+  roles?: string[];
+  /** 菜单角标：轮询端点 → 计数字段（如告警「待确认」数） */
+  badge?: {
+    /** 轮询端点（如 /api/iot/devices/overview） */
+    endpoint: string;
+    /** 响应 JSON 中计数字段（如 pendingAlerts） */
+    field: string;
+    /** 轮询间隔 ms（缺省 30000） */
+    intervalMs?: number;
+  };
 }
 
 /**
