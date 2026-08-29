@@ -1265,3 +1265,48 @@ export const SUGGESTION_STATUS_META: Record<SuggestionStatus, { text: string; co
   MODIFIED: { text: "已修改", color: "processing" },
   REJECTED: { text: "已拒绝", color: "default" },
 };
+
+// ============================================================
+// 评审（办案产物评审闭环 · 待审/通过/驳回）
+// ============================================================
+export type ReviewArtifactType = "DOCUMENT" | "STRATEGY" | "PLAN" | "OUTCOME";
+export type ReviewStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface LegalReview {
+  id: number;
+  tenantId: number;
+  caseId: number;
+  artifactType: ReviewArtifactType;
+  artifactRef: string;
+  reviewerUserId?: number | null;
+  status: ReviewStatus;
+  reviewedAt?: string | null;
+  comment?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ReviewRequest {
+  caseId: number;
+  artifactType: ReviewArtifactType;
+  artifactRef: string;
+  reviewerUserId?: number | null;
+}
+
+export interface ReviewDecisionRequest {
+  status: ReviewStatus;
+  comment?: string;
+}
+
+export const REVIEW_ARTIFACT_META: Record<ReviewArtifactType, { text: string; color: string }> = {
+  DOCUMENT: { text: "文书", color: "blue" },
+  STRATEGY: { text: "策略", color: "purple" },
+  PLAN: { text: "计划", color: "cyan" },
+  OUTCOME: { text: "结果", color: "green" },
+};
+
+export const REVIEW_STATUS_META: Record<ReviewStatus, { text: string; color: string }> = {
+  PENDING: { text: "待审", color: "orange" },
+  APPROVED: { text: "已通过", color: "success" },
+  REJECTED: { text: "已驳回", color: "red" },
+};
