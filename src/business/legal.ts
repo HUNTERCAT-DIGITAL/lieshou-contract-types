@@ -1015,3 +1015,253 @@ export const GOV_SEVERITY_META: Record<"HIGH" | "MEDIUM" | "LOW", { text: string
 export const GOV_CATEGORY_OPTIONS: { value: GovernanceCategory; label: string }[] = (
   Object.keys(GOV_CATEGORY_META) as GovernanceCategory[]
 ).map((c) => ({ value: c, label: GOV_CATEGORY_META[c].text }));
+
+// ============================================================
+// 分工授权（五角色协同 · 阶段级动态分工 · ADR-0045）
+// ============================================================
+export type AssignmentStatus = "ASSIGNED" | "IN_PROGRESS" | "REVIEWING" | "COMPLETED";
+
+export interface CaseAssignment {
+  id: number;
+  tenantId: number;
+  caseId: number;
+  /** 案件阶段（如 STRATEGY_REPORT） */
+  stageCode: string;
+  /** 任务类型（如 策略分析 / 文书起草 / 检索报告） */
+  taskType: string;
+  ownerUserId: number;
+  reviewerUserId?: number | null;
+  status: AssignmentStatus;
+  assignedAt?: string;
+  assignedBy?: number | null;
+  completedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AssignmentRequest {
+  stageCode: string;
+  taskType: string;
+  ownerUserId: number;
+  reviewerUserId?: number | null;
+  status?: AssignmentStatus;
+}
+
+export const ASSIGNMENT_STATUS_META: Record<AssignmentStatus, { text: string; color: string }> = {
+  ASSIGNED: { text: "已指派", color: "blue" },
+  IN_PROGRESS: { text: "进行中", color: "processing" },
+  REVIEWING: { text: "复核中", color: "gold" },
+  COMPLETED: { text: "已完成", color: "success" },
+};
+
+// ============================================================
+// 案件席位（五角色协同 · 5 席 × 每案 · 一人可兼多席）
+// ============================================================
+export type SeatCode = "CASE_SOURCE" | "LEAD" | "ASSOCIATE" | "ASSISTANT" | "SECRETARY";
+
+export interface CaseRole {
+  id: number;
+  tenantId: number;
+  caseId: number;
+  seatCode: SeatCode;
+  memberUserId: number;
+  grantedAt?: string;
+  grantedBy?: number | null;
+  revokedAt?: string | null;
+  revokedBy?: number | null;
+}
+
+export interface CaseRoleRequest {
+  seatCode: SeatCode;
+  memberUserId: number;
+}
+
+export const SEAT_META: Record<SeatCode, { text: string; color: string }> = {
+  CASE_SOURCE: { text: "案源律师", color: "cyan" },
+  LEAD: { text: "主办律师", color: "geekblue" },
+  ASSOCIATE: { text: "协办律师", color: "blue" },
+  ASSISTANT: { text: "助理律师", color: "purple" },
+  SECRETARY: { text: "法律秘书", color: "default" },
+};
+
+// ============================================================
+// 知识流（办案经验沉淀 → 知识卡 · ADR-0045）
+// ============================================================
+export type FlowKind = "STRATEGY_CARD" | "DOC_EXPR_CARD" | "EXPERIENCE_CARD";
+export type FlowStatus = "CANDIDATE" | "REVIEWED" | "ANONYMIZED" | "REUSABLE";
+
+export interface KnowledgeFlow {
+  id: number;
+  tenantId: number;
+  caseId: number;
+  kind: FlowKind;
+  title: string;
+  content: string;
+  status: FlowStatus;
+  reviewerUserId?: number | null;
+  reviewedAt?: string | null;
+  isPrivate?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface KnowledgeFlowRequest {
+  caseId: number;
+  kind: FlowKind;
+  title: string;
+  content: string;
+  isPrivate?: boolean;
+}
+
+export interface KnowledgeFlowAdvanceRequest {
+  status: FlowStatus;
+}
+
+export const FLOW_KIND_META: Record<FlowKind, { text: string }> = {
+  STRATEGY_CARD: { text: "策略卡" },
+  DOC_EXPR_CARD: { text: "文书表达卡" },
+  EXPERIENCE_CARD: { text: "办案经验卡" },
+};
+
+export const FLOW_STATUS_META: Record<FlowStatus, { text: string; color: string }> = {
+  CANDIDATE: { text: "候选", color: "orange" },
+  REVIEWED: { text: "已评审", color: "blue" },
+  ANONYMIZED: { text: "已脱敏", color: "purple" },
+  REUSABLE: { text: "可复用", color: "success" },
+};
+
+// ============================================================
+// 台账（案件事实/证据/策略/任务 分型记录）
+// ============================================================
+export type LedgerType = "FACT" | "EVIDENCE" | "STRATEGY" | "TASK";
+export type LedgerStatus = "CURRENT" | "CONFIRMED" | "PARTIAL_DISPUTED" | "PENDING_VERIFY";
+
+export interface LedgerEntry {
+  id: number;
+  tenantId: number;
+  caseId: number;
+  ledgerType: LedgerType;
+  title: string;
+  detail: string;
+  status: LedgerStatus;
+  occurredAt?: string;
+  sortSeq?: number;
+  isPrivate?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface LedgerRequest {
+  title: string;
+  detail: string;
+  status?: LedgerStatus;
+  occurredAt?: string;
+  sortSeq?: number;
+  isPrivate?: boolean;
+}
+
+export const LEDGER_TYPE_META: Record<LedgerType, { text: string; color: string }> = {
+  FACT: { text: "事实", color: "blue" },
+  EVIDENCE: { text: "证据", color: "green" },
+  STRATEGY: { text: "策略", color: "purple" },
+  TASK: { text: "任务", color: "orange" },
+};
+
+export const LEDGER_STATUS_META: Record<LedgerStatus, { text: string; color: string }> = {
+  CURRENT: { text: "当前", color: "default" },
+  CONFIRMED: { text: "已确认", color: "success" },
+  PARTIAL_DISPUTED: { text: "部分存疑", color: "warning" },
+  PENDING_VERIFY: { text: "待核验", color: "orange" },
+};
+
+// ============================================================
+// AI 会话与建议（办案助手 · ADR-0045）
+// ============================================================
+export type AgentCode = "CASE_SECRETARY" | "TIME_DIGITAL" | "COMPLIANCE" | "RESEARCH";
+export type AiLayer = "DRAFT" | "CASE" | "PENDING_CONFIRM" | "EXPERIENCE_CANDIDATE" | "REVIEW";
+export type SuggestionKind =
+  | "TIME_ATTRIBUTION"
+  | "CONFLICT_HINT"
+  | "KNOWLEDGE_CARD"
+  | "DOC_DRAFT"
+  | "SUMMARY";
+export type SuggestionStatus = "PENDING" | "ACCEPTED" | "MODIFIED" | "REJECTED";
+
+export interface AiSession {
+  id: number;
+  tenantId: number;
+  caseId: number;
+  agentCode: AgentCode;
+  ownerUserId: number;
+  layer: AiLayer;
+  modelId?: string;
+  policyVersion?: string;
+  sessionCount?: number;
+  sourceCount?: number;
+  manualRevisionCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AiSessionRequest {
+  caseId: number;
+  agentCode: AgentCode;
+  modelId?: string;
+}
+
+export interface AiSessionLayerRequest {
+  layer: AiLayer;
+}
+
+export interface AiSuggestion {
+  id: number;
+  tenantId: number;
+  sessionId: number;
+  kind: SuggestionKind;
+  payloadJson: string;
+  status: SuggestionStatus;
+  handledBy?: number | null;
+  handledAt?: string | null;
+  note?: string;
+  createdAt?: string;
+}
+
+export interface AiSuggestionRequest {
+  kind: SuggestionKind;
+  payloadJson: string;
+}
+
+export interface AiSuggestionHandleRequest {
+  status: SuggestionStatus;
+  note?: string;
+}
+
+export const AGENT_META: Record<AgentCode, { text: string; color: string }> = {
+  CASE_SECRETARY: { text: "案件秘书", color: "blue" },
+  TIME_DIGITAL: { text: "计时数字化", color: "cyan" },
+  COMPLIANCE: { text: "合规助手", color: "red" },
+  RESEARCH: { text: "检索研究", color: "purple" },
+};
+
+export const AI_LAYER_META: Record<AiLayer, { text: string; color: string }> = {
+  DRAFT: { text: "草稿", color: "default" },
+  CASE: { text: "入卷", color: "blue" },
+  PENDING_CONFIRM: { text: "待确认", color: "orange" },
+  EXPERIENCE_CANDIDATE: { text: "经验候选", color: "purple" },
+  REVIEW: { text: "评审中", color: "gold" },
+};
+
+export const SUGGESTION_KIND_META: Record<SuggestionKind, { text: string; color: string }> = {
+  TIME_ATTRIBUTION: { text: "计时归属", color: "blue" },
+  CONFLICT_HINT: { text: "冲突提示", color: "red" },
+  KNOWLEDGE_CARD: { text: "知识卡", color: "purple" },
+  DOC_DRAFT: { text: "文书草稿", color: "cyan" },
+  SUMMARY: { text: "摘要", color: "green" },
+};
+
+export const SUGGESTION_STATUS_META: Record<SuggestionStatus, { text: string; color: string }> = {
+  PENDING: { text: "待处理", color: "orange" },
+  ACCEPTED: { text: "已采纳", color: "success" },
+  MODIFIED: { text: "已修改", color: "processing" },
+  REJECTED: { text: "已拒绝", color: "default" },
+};
