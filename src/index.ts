@@ -48,6 +48,7 @@ export type RoleTagColor = string;
 
 // —— 无冲突模块：整模块导出 ——
 export * from "./business/approval";
+export * from "./business/edition";
 export * from "./business/audit";
 export * from "./business/auth";
 export * from "./business/contact";
