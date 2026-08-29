@@ -1,4 +1,16 @@
 /**
+ * 跨端 Edition（版别）类型 · 2026-08 上游重构统一
+ *
+ * 背景：5 端（admin-web/desktop/mobile/mobile-web/mini-program）重建为 React 骨架后，
+ * 各端各自维护一份 EditionConfig 副本（仅字段子集不同）——本文件为唯一事实源：
+ * - 端内不再定义 EditionConfig/EditionExtraRoute/EditionTab（删除副本，从本包导入）
+ * - 客户仓 editions/<client>.extra.ts 也按本类型注入（deploy 脚本同源）
+ * - 各端只取自己需要的字段（未用字段忽略）
+ */
+
+import type { ComponentType } from 'react';
+
+/**
  * 登录能力配置（端薄壳化 · 2026-08-29 决策）.
  *
  * 登录是「可配置的平台能力」而非固定页面：
@@ -13,4 +25,56 @@ export interface EditionLogin {
   mode?: "password" | "sms" | "sso" | "none";
   /** 登录页品牌标语（客户注入, 缺省用 edition.slogan） */
   brandMessage?: string;
+}
+
+/** 底部导航项（H5 / 小程序 tab · 2026-08 统一） */
+export interface EditionTab {
+  /** 路由 path 首段（如 home / overview） */
+  name: string;
+  title: string;
+  /** 图标（emoji 或资源路径，各端自行解释） */
+  icon?: string;
+}
+
+/**
+ * 客户注入路由（懒加载组件工厂 · 2026-08 统一为 React load 语义）.
+ * 由客户仓 deploy 生成 editions/<client>.extra.ts 注入，平台只渲染槽位。
+ */
+export interface EditionExtraRoute {
+  path: string;
+  /** 懒加载组件工厂（客户包模块，如 () => import('@lieshoucloud/<client>/pages/XxxPage')） */
+  load: () => Promise<{ default: ComponentType }>;
+  title?: string;
+  /** 声明后作为底部 tab 展示（path 首段；H5/小程序用） */
+  tab?: EditionTab;
+  /** true = 独立页（不带布局，如外部落地页） */
+  standalone?: boolean;
+  /** 权限码（缺省 = 登录可见；admin-web 等使用） */
+  accessKey?: string;
+}
+
+/**
+ * 跨端 EditionConfig（2026-08 统一最小集）.
+ * 各端/客户取所需字段；端级专有扩展（如 admin-web 门户卡片/行业装配）留在端内组合。
+ */
+export interface EditionConfig {
+  id: string;
+  /** 品牌名（导航栏/登录页/启动页展示） */
+  brandName: string;
+  /** 品牌标语 */
+  slogan?: string;
+  /** 品牌 logo（public 资源路径 / 端内资源路径） */
+  logo?: string;
+  /** 版权署名主体（缺省回退 brandName） */
+  companyName?: string;
+  /** 登录默认租户（缺省 default） */
+  tenantCode?: string;
+  /** 登录能力配置 */
+  login?: EditionLogin;
+  /** 底部导航（H5/小程序） */
+  tabs?: EditionTab[];
+  /** 客户注入路由 */
+  extraRoutes?: EditionExtraRoute[];
+  /** 裁剪底部 tab */
+  hiddenTabs?: string[];
 }
