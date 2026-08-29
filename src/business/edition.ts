@@ -36,6 +36,15 @@ export interface EditionTab {
   icon?: string;
 }
 
+/** 客户菜单声明（后台端注入菜单用 · 2026-08 客户字段上收） */
+export interface EditionRouteMenu {
+  name: string;
+  icon?: string;
+  order?: number;
+  /** 同 group 的菜单项收进分组子菜单 */
+  group?: string;
+}
+
 /**
  * 客户注入路由（懒加载组件工厂 · 2026-08 统一为 React load 语义）.
  * 由客户仓 deploy 生成 editions/<client>.extra.ts 注入，平台只渲染槽位。
@@ -45,6 +54,8 @@ export interface EditionExtraRoute {
   /** 懒加载组件工厂（客户包模块，如 () => import('@lieshoucloud/<client>/pages/XxxPage')） */
   load: () => Promise<{ default: ComponentType }>;
   title?: string;
+  /** 客户菜单声明（后台端） */
+  menu?: EditionRouteMenu;
   /** 声明后作为底部 tab 展示（path 首段；H5/小程序用） */
   tab?: EditionTab;
   /** true = 独立页（不带布局，如外部落地页） */
