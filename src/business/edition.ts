@@ -77,4 +77,14 @@ export interface EditionConfig {
   extraRoutes?: EditionExtraRoute[];
   /** 裁剪底部 tab */
   hiddenTabs?: string[];
+  /** 品牌主色（antd/端主题色值 · 2026-08 客户字段上收，如 dwjk #02429B） */
+  primaryColor?: string;
+  /** 门户副文案（登录/门户页 hero 描述） */
+  heroDesc?: string;
+  /** 菜单路径裁剪（后台端隐藏非本客户业务菜单 · 如 dwjk 隐藏 CRM/财务） */
+  hiddenMenus?: string[];
+  /** 值班员控制台模式：登录直进工作台，只展示行业核心看板（dwjk 电网监控） */
+  dutyConsole?: boolean;
+  /** 登录后默认落地页（客户版指向客户工作台） */
+  homePath?: string;
 }
