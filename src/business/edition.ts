@@ -25,6 +25,8 @@ export interface EditionLogin {
   mode?: "password" | "sms" | "sso" | "none";
   /** 登录页品牌标语（客户注入, 缺省用 edition.slogan） */
   brandMessage?: string;
+  /** 隐藏租户输入框（单租户版：默认租户静默使用 edition.tenantCode, 不展示给用户） */
+  hideTenantInput?: boolean;
 }
 
 /** 底部导航项（H5 / 小程序 tab · 2026-08 统一） */
