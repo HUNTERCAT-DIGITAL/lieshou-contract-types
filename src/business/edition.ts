@@ -77,6 +77,34 @@ export interface EditionExtraRoute {
   accessKey?: string;
 }
 
+/** 门户页功能卡片 */
+export interface EditionPortalFeature {
+  title: string;
+  desc: string;
+}
+
+/** 门户页多端入口（二维码 / 下载按钮） */
+export interface EditionPortalEntry {
+  /** 显示名（如「H5 移动端」「桌面端」） */
+  label: string;
+  /** 说明（如「浏览器直接访问」） */
+  desc?: string;
+  /** 访问/下载 URL（qrcode 类型编码此 URL 为二维码） */
+  url?: string;
+  /** 类型：qrcode=展示二维码 / download=下载按钮 */
+  kind?: 'qrcode' | 'download';
+}
+
+/** 门户页配置（产品介绍 + 功能列表 + 多端入口） */
+export interface EditionPortal {
+  /** 产品介绍段落 */
+  intro?: string[];
+  /** 功能列表 */
+  features?: EditionPortalFeature[];
+  /** 多端入口 */
+  entries?: EditionPortalEntry[];
+}
+
 /**
  * 跨端 EditionConfig（2026-08 统一最小集）.
  * 各端/客户取所需字段；端级专有扩展（如 admin-web 门户卡片/行业装配）留在端内组合。
@@ -105,6 +133,8 @@ export interface EditionConfig {
   primaryColor?: string;
   /** 门户副文案（登录/门户页 hero 描述） */
   heroDesc?: string;
+  /** 门户页配置（产品介绍/功能/多端入口） */
+  portal?: EditionPortal;
   /** 菜单路径裁剪（后台端隐藏非本客户业务菜单 · 如 dwjk 隐藏 CRM/财务） */
   hiddenMenus?: string[];
   /** 值班员控制台模式：登录直进工作台，只展示行业核心看板（dwjk 电网监控） */
