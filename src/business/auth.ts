@@ -23,6 +23,8 @@ export interface TokenResponse {
   tenantName?: string;
   /** 租户版别：GENERIC | LAYER | ZHIYE | JMZZ（登录响应 · ADR-0035） */
   tenantEdition?: string;
+  /** 首次登录需激活（管理员建用户未设密码 · 2026-08；true → 前端引导设置密码） */
+  activationRequired?: boolean;
   /**
    * 该用户名可登录的合法租户（账号存在且 ACTIVE；登录后切换租户用 · 2026-08）
    */

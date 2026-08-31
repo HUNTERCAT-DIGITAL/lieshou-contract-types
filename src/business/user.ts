@@ -25,7 +25,8 @@ export interface User {
 export interface CreateUserRequest {
   username: string;
   displayName: string;
-  password: string;
+  /** 密码可选（2026-08：管理员建用户可不设密码，首次登录用验证码激活设置） */
+  password?: string;
   email?: string;
   phone?: string;
 }
