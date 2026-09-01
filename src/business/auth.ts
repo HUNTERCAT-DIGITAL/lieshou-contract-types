@@ -46,6 +46,8 @@ export interface CurrentUser {
   tenantName?: string;
   tenantEdition?: string;
   username: string;
+  /** 头像 URL（个人中心/顶栏展示 · 2026-09） */
+  avatarUrl?: string | null;
   roles: string[];
   /** 权限码（ADR-0024 Phase 2 · 菜单可见性与接口鉴权共用数据源） */
   permissions?: string[];
