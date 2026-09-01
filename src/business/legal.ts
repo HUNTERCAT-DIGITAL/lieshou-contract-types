@@ -1573,3 +1573,22 @@ export interface ConsultSummary {
   processing: number;
   resolved: number;
 }
+
+// ------------------------------------------------------------
+// AI 会话对话消息（办案助手 · POST /legal/ai/sessions/{id}/messages）
+// ------------------------------------------------------------
+
+/** AI 会话消息 */
+export interface AiMessage {
+  id: number;
+  sessionId: number;
+  /** USER 用户 / ASSISTANT AI 回复 */
+  role: "USER" | "ASSISTANT";
+  content: string;
+  createdAt: string;
+}
+
+/** 发送消息请求 */
+export interface AiSendMessageRequest {
+  content: string;
+}
