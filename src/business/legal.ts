@@ -223,6 +223,42 @@ export interface ArchiveSummary {
   byStage: { stage: string; count: number }[];
 }
 
+/** 统计看板 · 月度趋势行（GET /legal/analytics/dashboard · trend） */
+export interface AnalyticsTrendRow {
+  /** 格式 yyyy-MM */
+  month: string;
+  /** 当月新建案件数 */
+  caseCount: number;
+  /** 当月创收（计时金额） */
+  revenue: number;
+}
+
+/** 统计看板 · 律师维度行（byLawyer） */
+export interface AnalyticsLawyerRow {
+  lawyer: string;
+  hours: number;
+  amount: number;
+  /** 承办案件数 */
+  caseCount: number;
+}
+
+/** 统计看板（GET /legal/analytics/dashboard · 合伙人视角） */
+export interface AnalyticsDashboard {
+  totalCases: number;
+  activeCount: number;
+  closedCount: number;
+  /** 归档率（%） */
+  archivedRate: number;
+  /** 本月创收（计时金额） */
+  monthlyRevenue: number;
+  /** 近 6 个月趋势 */
+  trend: AnalyticsTrendRow[];
+  /** 案件类型分布 */
+  byType: { caseType: string; count: number }[];
+  /** 律师维度（案件数 + 小时 + 金额） */
+  byLawyer: AnalyticsLawyerRow[];
+}
+
 /** 卷宗文书请求 */
 export interface DocumentRequest {
   title: string;
