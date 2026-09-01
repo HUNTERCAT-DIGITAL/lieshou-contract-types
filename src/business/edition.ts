@@ -137,6 +137,8 @@ export interface EditionConfig {
   portal?: EditionPortal;
   /** 菜单路径裁剪（后台端隐藏非本客户业务菜单 · 如 dwjk 隐藏 CRM/财务） */
   hiddenMenus?: string[];
+  /** 顶栏快捷入口（如「驾驶舱」大屏按钮，渲染在顶部右侧 · 2026-09-01） */
+  headerActions?: Array<{ label: string; path: string }>;
   /** 值班员控制台模式：登录直进工作台，只展示行业核心看板（dwjk 电网监控） */
   dutyConsole?: boolean;
   /** 登录后默认落地页（客户版指向客户工作台） */
