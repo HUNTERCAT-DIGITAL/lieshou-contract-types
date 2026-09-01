@@ -172,10 +172,24 @@ export interface TimeEntry {
   createdAt: string;
 }
 
-/** 律时状态（待确认流程：记录 → 待确认 → 已确认） */
-export type TimeEntryStatus = "PENDING" | "CONFIRMED";
+/** 律时状态（客户原型 V41 G6 状态流：记录 → 本人确认 → 主管复核 → 可计费 → 关闭） */
+export type TimeEntryStatus =
+  | "CAPTURING"
+  | "OWNER_CONFIRMATION"
+  | "SUPERVISOR_REVIEW"
+  | "BILLING_READY"
+  | "CLOSED"
+  | "REJECTED"
+  | "PENDING"
+  | "CONFIRMED";
 
 export const TIME_ENTRY_STATUS_META: Record<TimeEntryStatus, { text: string; color: string }> = {
+  CAPTURING: { text: "记录中", color: "default" },
+  OWNER_CONFIRMATION: { text: "本人确认中", color: "orange" },
+  SUPERVISOR_REVIEW: { text: "主管复核", color: "gold" },
+  BILLING_READY: { text: "可计费", color: "green" },
+  CLOSED: { text: "已关闭", color: "default" },
+  REJECTED: { text: "已驳回", color: "red" },
   PENDING: { text: "待确认", color: "orange" },
   CONFIRMED: { text: "已确认", color: "green" },
 };
@@ -196,6 +210,52 @@ export interface TimeEntrySummary {
   count: number;
   /** 待确认笔数（律时） */
   pendingCount: number;
+}
+
+/** 月报 · 按日聚合行（GET /legal/time-entries/monthly-report · byDay） */
+export interface TimeEntryReportDayRow {
+  date: string;
+  hours: number;
+  amount: number;
+  count: number;
+}
+
+/** 月报 · 按案件聚合行（byCase） */
+export interface TimeEntryReportCaseRow {
+  caseId: number;
+  caseNo: string;
+  caseTitle: string;
+  hours: number;
+  amount: number;
+  count: number;
+}
+
+/** 月报 · 明细行（items · 带案号/标题） */
+export interface TimeEntryReportItem {
+  id: number;
+  caseId: number;
+  caseNo: string;
+  caseTitle: string;
+  lawyer: string;
+  workDate: string;
+  hours: number;
+  rate: number;
+  amount: number;
+  description?: string | null;
+  status: TimeEntryStatus;
+}
+
+/** 月度律时月报（GET /legal/time-entries/monthly-report） */
+export interface TimeEntryReport {
+  year: number;
+  month: number;
+  totalHours: number;
+  totalAmount: number;
+  count: number;
+  pendingCount: number;
+  byDay: TimeEntryReportDayRow[];
+  byCase: TimeEntryReportCaseRow[];
+  items: TimeEntryReportItem[];
 }
 
 /** 费用条目（实际支出 · ADR-0045 Phase 2 扩展） */
