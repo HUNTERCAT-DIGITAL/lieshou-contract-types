@@ -14,6 +14,8 @@ export interface User {
   displayName: string;
   email?: string | null;
   phone?: string | null;
+  /** 头像 URL（上传文件或默认头像 · 2026-09） */
+  avatarUrl?: string | null;
   status: UserStatus;
   roles: string[];
   createdAt: string;
