@@ -1490,3 +1490,86 @@ export const REVIEW_STATUS_META: Record<ReviewStatus, { text: string; color: str
   APPROVED: { text: "已通过", color: "success" },
   REJECTED: { text: "已驳回", color: "red" },
 };
+
+// ------------------------------------------------------------
+// 资讯发布 + 咨询工单（#10 · GET /legal/articles + /legal/consult-tickets）
+// ------------------------------------------------------------
+
+/** 所内资讯 */
+export interface LegalArticle {
+  id: number;
+  tenantId: number;
+  title: string;
+  content: string;
+  /** DRAFT 草稿 / PUBLISHED 已发布 */
+  status: ArticleStatus;
+  authorId?: number | null;
+  authorName?: string | null;
+  publishedAt?: string | null;
+  createdAt: string;
+}
+
+export type ArticleStatus = "DRAFT" | "PUBLISHED";
+
+export const ARTICLE_STATUS_META: Record<ArticleStatus, { text: string; color: string }> = {
+  DRAFT: { text: "草稿", color: "default" },
+  PUBLISHED: { text: "已发布", color: "success" },
+};
+
+/** 资讯请求 */
+export interface ArticleRequest {
+  title: string;
+  content: string;
+  status?: ArticleStatus;
+}
+
+/** 资讯统计 */
+export interface ArticleSummary {
+  total: number;
+  published: number;
+  draft: number;
+}
+
+/** 咨询工单 */
+export interface ConsultTicket {
+  id: number;
+  tenantId: number;
+  name: string;
+  phone: string;
+  message: string;
+  /** PENDING / PROCESSING / RESOLVED */
+  status: ConsultStatus;
+  assignedTo?: number | null;
+  response?: string | null;
+  respondedAt?: string | null;
+  createdAt: string;
+}
+
+export type ConsultStatus = "PENDING" | "PROCESSING" | "RESOLVED";
+
+export const CONSULT_STATUS_META: Record<ConsultStatus, { text: string; color: string }> = {
+  PENDING: { text: "待受理", color: "orange" },
+  PROCESSING: { text: "处理中", color: "blue" },
+  RESOLVED: { text: "已解决", color: "success" },
+};
+
+/** 咨询工单 · 公众提交 */
+export interface ConsultSubmitRequest {
+  name: string;
+  phone: string;
+  message: string;
+}
+
+/** 咨询工单 · 受理/回复 */
+export interface ConsultProcessRequest {
+  status?: ConsultStatus;
+  response?: string;
+}
+
+/** 工单统计 */
+export interface ConsultSummary {
+  total: number;
+  pending: number;
+  processing: number;
+  resolved: number;
+}
