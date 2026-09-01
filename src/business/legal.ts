@@ -179,6 +179,50 @@ export interface DocumentTemplateRequest {
   status?: DocumentTemplateStatus;
 }
 
+/** 卷宗归档登记（#7 · GET /legal/archives） */
+export interface LegalArchive {
+  id: number;
+  caseId: number;
+  /** 案号（列表 join） */
+  caseNo: string;
+  /** 案件标题（列表 join） */
+  caseTitle: string;
+  /** 归档阶段（结案归档/案卷移交/存证归档） */
+  stage: string;
+  /** 存放位置 */
+  storage?: string | null;
+  /** 归档日期 */
+  archivedAt?: string | null;
+  note?: string | null;
+  updatedAt: string;
+}
+
+/** 卷宗归档登记请求 */
+export interface LegalArchiveRequest {
+  caseId: number;
+  stage?: string;
+  storage?: string;
+  archivedAt?: string;
+  note?: string;
+}
+
+/** 归档看板汇总（GET /legal/archives/summary） */
+export interface ArchiveSummary {
+  totalCases: number;
+  /** 结案案件数（CLOSED + ARCHIVED） */
+  closedCount: number;
+  /** 已归档数 */
+  archivedCount: number;
+  /** 归档率（%，1 位小数） */
+  archivedRate: number;
+  /** 结案未归档 */
+  pendingCount: number;
+  /** 逾期未归档（结案超 30 天） */
+  overdueCount: number;
+  /** 按归档阶段分布 */
+  byStage: { stage: string; count: number }[];
+}
+
 /** 卷宗文书请求 */
 export interface DocumentRequest {
   title: string;
