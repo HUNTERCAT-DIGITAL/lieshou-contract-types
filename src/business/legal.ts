@@ -139,6 +139,46 @@ export interface LegalDocument {
   createdAt: string;
 }
 
+/** 所内文书模板（#6 文书模板库 · GET /legal/templates） */
+export interface DocumentTemplate {
+  id: number;
+  tenantId: number;
+  /** 模板名称 */
+  name: string;
+  /** 分类（合同/诉状/意见书/备忘录/其他） */
+  category: string;
+  /** 模板正文（{{变量}} 占位） */
+  content: string;
+  /** 变量名（逗号分隔） */
+  variables?: string | null;
+  /** DRAFT 草稿 / PUBLISHED 已发布 */
+  status: DocumentTemplateStatus;
+  /** 套用次数 */
+  usageCount: number;
+  createdBy?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+
+export type DocumentTemplateStatus = "DRAFT" | "PUBLISHED";
+
+export const DOCUMENT_TEMPLATE_STATUS_META: Record<
+  DocumentTemplateStatus,
+  { text: string; color: string }
+> = {
+  DRAFT: { text: "草稿", color: "default" },
+  PUBLISHED: { text: "已发布", color: "success" },
+};
+
+/** 文书模板请求（创建/更新） */
+export interface DocumentTemplateRequest {
+  name: string;
+  category: string;
+  content: string;
+  variables?: string;
+  status?: DocumentTemplateStatus;
+}
+
 /** 卷宗文书请求 */
 export interface DocumentRequest {
   title: string;
