@@ -31,6 +31,8 @@ export interface CreateUserRequest {
   password?: string;
   email?: string;
   phone?: string;
+  /** 目标租户 code（平台管理员跨租户建号时指定；缺省走服务端默认租户） */
+  tenantCode?: string;
 }
 
 /** 编辑用户（对应后端 UpdateUserRequest；password 传入才改） */
