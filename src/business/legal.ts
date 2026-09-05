@@ -1380,7 +1380,8 @@ export type SuggestionStatus = "PENDING" | "ACCEPTED" | "MODIFIED" | "REJECTED";
 export interface AiSession {
   id: number;
   tenantId: number;
-  caseId: number;
+  /** 案件（可空=全局会话 · 2026-09 Sk-3 全局对话） */
+  caseId?: number | null;
   agentCode: AgentCode;
   ownerUserId: number;
   layer: AiLayer;
@@ -1394,7 +1395,8 @@ export interface AiSession {
 }
 
 export interface AiSessionRequest {
-  caseId: number;
+  /** 案件（可空=全局会话） */
+  caseId?: number;
   agentCode: AgentCode;
   modelId?: string;
 }
