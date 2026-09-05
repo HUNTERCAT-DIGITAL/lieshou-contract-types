@@ -290,6 +290,15 @@ export interface TimeEntry {
   confirmedAt?: string;
   createdBy?: number | null;
   createdAt: string;
+  /** 记录来源（2026-09 计时被动化 · additive）：MANUAL 手动录入 / AUTO 行为捕捉 */
+  source?: "MANUAL" | "AUTO";
+  /** 被动计时的时段切片 id（capture slice · S2 落库，见 docs/legalmind-ai-engine-arch.md §3） */
+  sliceId?: number | null;
+  /** 归因事件指纹（审计挂 G8 哈希链） */
+  fromEventIds?: string[] | null;
+  /** 时段起止（AUTO 由 start/end 推导 hours；MANUAL 兼容现有 workDate+hours 手填） */
+  startAt?: string | null;
+  endAt?: string | null;
 }
 
 /** 律时状态（客户原型 V41 G6 状态流：记录 → 本人确认 → 主管复核 → 可计费 → 关闭） */
@@ -1364,7 +1373,8 @@ export type SuggestionKind =
   | "CONFLICT_HINT"
   | "KNOWLEDGE_CARD"
   | "DOC_DRAFT"
-  | "SUMMARY";
+  | "SUMMARY"
+  | "TIME_ENTRY_DRAFT";
 export type SuggestionStatus = "PENDING" | "ACCEPTED" | "MODIFIED" | "REJECTED";
 
 export interface AiSession {
@@ -1437,6 +1447,7 @@ export const SUGGESTION_KIND_META: Record<SuggestionKind, { text: string; color:
   KNOWLEDGE_CARD: { text: "知识卡", color: "purple" },
   DOC_DRAFT: { text: "文书草稿", color: "cyan" },
   SUMMARY: { text: "摘要", color: "green" },
+  TIME_ENTRY_DRAFT: { text: "计时候选", color: "orange" },
 };
 
 export const SUGGESTION_STATUS_META: Record<SuggestionStatus, { text: string; color: string }> = {
@@ -1591,4 +1602,78 @@ export interface AiMessage {
 /** 发送消息请求 */
 export interface AiSendMessageRequest {
   content: string;
+}
+
+// ============================================================
+// 律时 · Conversation Engine 契约草案（2026-09-05 · arch S1 · additive · 待 S2 评审消费）
+// 关联：docs/legalmind-ai-engine-arch.md（本仓）；现 AiSession（单 owner + caseId）=
+// participants=[owner×PERSONAL]、target=CASE 的特例，本草案不破坏现有消费方。
+// ============================================================
+
+/** 对话工作域（客户概念：个人/团队/集体） */
+export type WorkDomain = "PERSONAL" | "TEAM" | "ORG";
+
+/** 对话对象多态（替代 AiSession 强绑 caseId 的方向） */
+export type ConversationTargetType = "PERSONAL" | "CASE" | "TEAM" | "CLIENT" | "FIRM";
+
+/** 会话参与人（权限与验证主轴 = 参与人集合 × 对象密级） */
+export interface ConversationParticipant {
+  userId: number;
+  /** 在岗角色码（个人多角色：同一 userId 可多条参与人记录） */
+  roleCode?: string | null;
+  domain: WorkDomain;
+}
+
+/** Conversation Runtime 一等实体草案 */
+export interface ConversationDraft {
+  id?: number;
+  tenantId?: number;
+  targetType: ConversationTargetType;
+  targetId?: number | null;
+  participants: ConversationParticipant[];
+  agentCodes?: AgentCode[];
+  intent?: string | null;
+  template?: string | null;
+  createdAt?: string;
+}
+
+/** 被动计时 · 客户端行为事件（S3 埋点与 S2 capture_slice 的契约起点） */
+export type ActivityEventType =
+  | "OBJECT_OPEN"
+  | "OBJECT_CLOSE"
+  | "ACTION"
+  | "APP_VISIBLE"
+  | "APP_HIDDEN"
+  | "IDLE";
+
+export interface ActivityEvent {
+  userId: number;
+  tenantId?: number;
+  /** ISO 时间 */
+  ts: string;
+  type: ActivityEventType;
+  /** 对象上下文（case/doc/schedule/external…） */
+  objectType?: string | null;
+  objectId?: number | null;
+  /** 动作语义（映射 6 类业务工作流） */
+  action?: string | null;
+  channel: "WEB" | "DESKTOP" | "MOBILE" | "H5" | "HARMONY";
+  url?: string | null;
+  /** 本地缓冲批量上报幂等键 */
+  seq?: string | null;
+}
+
+/** 计时候选草稿 = AiSuggestion kind=TIME_ENTRY_DRAFT 的 payloadJson 结构草案 */
+export interface TimeEntryDraftPayload {
+  sliceId?: number;
+  caseId: number;
+  workDate: string;
+  startAt: string;
+  endAt: string;
+  /** 时长（小时，按粒度折算） */
+  hours: number;
+  /** 费率档案取值（缺省待定） */
+  rate?: number;
+  /** AI 概括该时段动作（引事件指纹） */
+  description: string;
 }
