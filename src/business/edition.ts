@@ -8,7 +8,7 @@
  * - 各端只取自己需要的字段（未用字段忽略）
  */
 
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 
 /**
  * 登录能力配置（端薄壳化 · 2026-08-29 决策）.
@@ -56,6 +56,12 @@ export interface EditionRouteMenu {
     /** 轮询间隔 ms（缺省 30000） */
     intervalMs?: number;
   };
+  /** 空间归属（缺省 = 不参与空间导航） */
+  space?: 'personal' | 'team' | 'organization';
+  /** 英文副标（工作台 OS 导航，如 TODAY COMMAND） */
+  en?: string;
+  /** 原型字符图标（⌂ ◇ ◎ ▦ ◷ ✦ ⌬ ⌘；空则用 icon antd 图标） */
+  glyph?: string;
 }
 
 /**
@@ -141,6 +147,8 @@ export interface EditionConfig {
   headerActions?: Array<{ label: string; path: string }>;
   /** 值班员控制台模式：登录直进工作台，只展示行业核心看板（dwjk 电网监控） */
   dutyConsole?: boolean;
+  /** 业务布局壳覆盖（缺省 = 端内 ConsoleLayout；客户可注入自绘壳，如三空间工作台 OS） */
+  layout?: ComponentType<{ children?: ReactNode }>;
   /** 登录后默认落地页（客户版指向客户工作台） */
   homePath?: string;
 }
