@@ -27,6 +27,8 @@ export interface EditionLogin {
   brandMessage?: string;
   /** 隐藏租户输入框（单租户版：默认租户静默使用 edition.tenantCode, 不展示给用户） */
   hideTenantInput?: boolean;
+  /** 注册入口：登录页展示"注册账号"链接并跳站内路径（如 "/register"；缺省不展示 · 2026-09） */
+  registerPath?: string;
 }
 
 /** 底部导航项（H5 / 小程序 tab · 2026-08 统一） */
