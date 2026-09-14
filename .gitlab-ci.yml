@@ -86,10 +86,11 @@ publish:
       # 门 3：凭证在位（protected + masked；非 protected tag 取不到值）
       [ -n "$NEXUS_DEPLOY_USER" ] && [ -n "$NEXUS_DEPLOY_PASS" ] || { echo "❌ 缺 CI 变量 NEXUS_DEPLOY_USER / NEXUS_DEPLOY_PASS（需 protected tag v*）"; exit 1; }
       echo "发布 @lieshoucloud/contract-types@$ver → Nexus npm-hosted"
-    # 凭证只落临时文件（不落日志/仓库）
-    - printf '//nexus.ts.huntercat.cn/repository/npm-hosted/:_auth=%s\nalways-auth=true\n' "$(printf '%s:%s' "$NEXUS_DEPLOY_USER" "$NEXUS_DEPLOY_PASS" | base64 -w0)" > "$CI_PROJECT_DIR/.npmrc.publish"
+    # 凭证只落项目级 .npmrc（pnpm 会自动读项目根的 .npmrc；--userconfig 是 npm 旗标，pnpm 不认）
+    # 不落日志/仓库；files: ["src"] 也不会把它打进 tarball
+    - printf '//nexus.ts.huntercat.cn/repository/npm-hosted/:_auth=%s\nalways-auth=true\n' "$(printf '%s:%s' "$NEXUS_DEPLOY_USER" "$NEXUS_DEPLOY_PASS" | base64 -w0)" > "$CI_PROJECT_DIR/.npmrc"
     # registry 由 package.json 的 publishConfig 指定（npm-hosted），不走默认 npm-group
-    - pnpm publish --no-git-checks --userconfig "$CI_PROJECT_DIR/.npmrc.publish"
-    - rm -f "$CI_PROJECT_DIR/.npmrc.publish"
+    - pnpm publish --no-git-checks
+    - rm -f "$CI_PROJECT_DIR/.npmrc"
     # 门 4：发完立刻从 npm-group 回读，确认消费方真能解析到（发布成功 ≠ 消费方能装）
     - npm view "@lieshoucloud/contract-types@$ver" version --registry "$NPM_REGISTRY"
