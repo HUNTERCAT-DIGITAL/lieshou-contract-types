@@ -6,7 +6,7 @@
 ## 项目身份
 - 名称: lieshou-contract-types（前端共享 · L0 契约层 / Bottom-Up）
 - 类型: pnpm 单包（`@lieshoucloud/contract-types`，`private: true`，无构建产物 —— `main`/`types` 直指 `src/index.ts`）
-- 仓库: gitlab.ts.huntercat.cn/huntercat-digital/lieshou-contract-types（默认 main；tag `v0.1.0` @2026-09-12）
+- 仓库: gitlab.ts.huntercat.cn/huntercat-digital/lieshou-contract-types（默认 main，**受保护**：push_access_level=0，一律走分支 + MR；protected tag `v*`）
 - 技术栈: TypeScript 5.6 strict · eslint 9 · 运行时依赖仅 `dayjs`；`@types/react` 只用于类型（`business/edition.ts` 的 `ComponentType`/`ReactNode`）
 - 上游: **无独立上游仓 —— 本仓即上游。** 2026-08-26 自时代一 GitHub `LieShouCloud-web/types` 拆出（首提交 `feat: 前端 types 层仓初始化——自 LieShouCloud-web/types 拆分`）。自身嵌套 submodule `open/config` → `lieshou-contract-config`
 
@@ -31,25 +31,28 @@
 - 契约演进 additive 优先（加可选字段）；改名/删除要考虑 20 个消费仓的 pin
 - 本仓是共享仓：**改本仓 → 先提本仓，再在消费方 bump submodule pin，分两个 PR**
 - 无构建步骤（`build` = `tsc --noEmit`），无测试框架 —— 唯一测试就是 `check-contract.mjs`
+- **发版流程**：改代码 → MR（`verify` 必须绿）→ 合入 main → `package.json` bump + CHANGELOG 补小节 → 打 tag `vX.Y.Z` → 自动 publish 到 Nexus。`v0.1.0` 之前无发布链路，`v0.2.0` 是首个可解析版本
 
 ## 当前阶段
-- 现役平台仓（时代二），最后提交 2026-09-12；`v0.1.0` 已打 tag
-- ⚠️ **`main` 当前是红的**：`pnpm test`（`check-contract --strict`）4 个 error
-  - `finance.ts` 用 `export *`，但其 `LedgerType` / `LedgerEntry` / `LEDGER_TYPE_META` 与 `legal.ts` 同名（默认检查即红）
-  - `legal.ts` 有 **73** 个非冲突符号未在 index.ts 可见（漏导出）
-  - `org.ts` 整个模块未挂到 index.ts
-- CI 只定义在 `.github/workflows/ci.yml`（GitHub Actions：typecheck+build+lint+test+check:contract），仓已迁自建 GitLab 且**无 `.gitlab-ci.yml`** → 大概率未在跑，这是 main 长期红的原因（待确认）
+- 现役平台仓（时代二），最后提交 2026-09-12；tag `v0.2.0` @2026-09-14 = **首个分发到内网 Nexus 的版本**
+- `main` 已绿：`pnpm typecheck` / `pnpm lint` / `pnpm test`（`check-contract --strict`）在 CI 上全绿（pipeline 703/702 实测）
+- CI/CD = `.gitlab-ci.yml`（GitLab CI，2026-09-14 建）：`verify`（typecheck + lint + check-contract）+ `publish`（**仅 `v*` tag** → Nexus `npm-hosted`）；runner = `java-maven @ wqc-server-dell`（tags `java,wqc`）
+- 发布实证：`@lieshoucloud/contract-types@0.2.0` 可从 `npm-group` 解析（31 文件 / 288.5 kB 解包 / 无 submodule 泄漏）
 
 ## 待办
-- [ ] 修 `main` 的红：`finance.ts` 改显式导出、`legal.ts` 补漏导出、`org.ts` 挂 index.ts
 - [ ] `gen:api:admin` 产出 `src/generated.admin.ts`，该文件**不存在**（悬空脚本：要么删要么补产物）
 - [ ] `gen:api*` 硬编码 `localhost:9000` / `8084-8088`，换机即废；应走 env 或配置
 - [ ] 提交信息引用的 `docs/legalmind-ai-engine-arch.md` 不在仓内（外置文档，易失效）
 - [ ] 鸿蒙 `ark-contract-types` 分叉双轨 —— 归一还是承认，未决
-- [ ] CI 迁 GitLab（或明确 GitHub Actions 是否还在跑）
+- [ ] 20 个消费仓**未切换**到 Nexus 依赖（现仍走 submodule pin + `workspace:*`）；要切就是另一个计划
+- [ ] `@lieshoucloud/contract-config` / `contract-api` 仍未发布到 Nexus → `lieshou-core-web` 的 release 门禁仍会被它们卡住
+- [ ] `lieshou-charts/.gitlab-ci.yml` 的 publish 用的同一行 `pnpm publish --no-git-checks --userconfig`（pnpm 不认该旗标，同样会失败）—— 未验证，疑同源故障
 
 ## 关键决策
 - 2026-08-26: 自 `LieShouCloud-web/types` 拆出独立契约仓（初名 `@lieshoucloud/types`，后定名 `contract-types`），挂 `open/config`
 - 2026-08-29: tag `upstream-unify-2026-08` / `edition-unify-2026-08` —— Edition 类型跨 5 端统一为唯一事实源，端内删除副本
 - 2026-09: `.gitmodules` 内网/GitHub URL → 自建 GitLab（`d10ffb2` / `19f7ad8`）
-- 2026-09-12: `v0.1.0`
+- 2026-09-14: **版本管理四道门**（首发前确立）—— tag 必须 = `v<package.json version>`；`CHANGELOG.md` 必须有该版本小节；CI 变量 `NEXUS_DEPLOY_*` 在位；发布后从 `npm-group` 回读校验。**删/改 `business/*` 导出符号 = 破坏性变更**，必须记 `### 破坏性变更`
+- 2026-09-14: **首发 0.2.0**（跳过 0.1.0：该 tag 从未分发，保留作历史标记，同 framework『0.3.0 从未分发』先例）；`package.json` 增 `files: ["src"]`（否则 submodule 目录会被卷进 tarball）、移除 `private`（否则拒发）
+- 2026-09-14: CI 由 GitHub Actions 平移到 GitLab CI，删除 `.github/workflows/ci.yml`（不触发的死文件，对齐 i18n/charts 先例）
+- 2026-09-14: 本仓加入 `lieshou-contract-config` 的 **CI_JOB_TOKEN 入站白名单**（跨仓 submodule 克隆必需，ui/core-web 早已在列）
