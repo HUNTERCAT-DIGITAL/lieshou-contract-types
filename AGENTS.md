@@ -8,7 +8,9 @@
 - 类型: pnpm 单包（`@lieshoucloud/contract-types`，`private: true`，无构建产物 —— `main`/`types` 直指 `src/index.ts`）
 - 仓库: gitlab.ts.huntercat.cn/huntercat-digital/lieshou-contract-types（默认 main，**受保护**：push_access_level=0，一律走分支 + MR；protected tag `v*`）
 - 技术栈: TypeScript 5.6 strict · eslint 9 · 运行时依赖仅 `dayjs`；`@types/react` 只用于类型（`business/edition.ts` 的 `ComponentType`/`ReactNode`）
-- 上游: **无独立上游仓 —— 本仓即上游。** 2026-08-26 自时代一 GitHub `LieShouCloud-web/types` 拆出（首提交 `feat: 前端 types 层仓初始化——自 LieShouCloud-web/types 拆分`）。自身嵌套 submodule `open/config` → `lieshou-contract-config`
+- 上游: **无独立上游仓 —— 本仓即上游。** 2026-08-26 自时代一 GitHub `LieShouCloud-web/types` 拆出（首提交 `feat: 前端 types 层仓初始化——自 LieShouCloud-web/types 拆分`）。
+- 供应链: **@lieshoucloud 上游依赖清零**（2026-09-14）—— 原先靠 `open/config` submodule 取 TS 基线，现基线已内联进本仓 `tsconfig.json`；
+  `.npmrc` 只 pin `@lieshoucloud:registry=…/npm-group/`（将来加同 scope 依赖自动走 Nexus，公共包仍走默认源）
 
 ## 架构速览
 三块，全在 `src/`（约 10.4k 行）：
@@ -30,10 +32,12 @@
 - `generated*.ts` 由 `pnpm gen:api*` 从后端 OpenAPI 生成，不手改；业务代码走 `business` 层
 - 契约演进 additive 优先（加可选字段）；改名/删除要考虑 20 个消费仓的 pin
 - 本仓是共享仓：**改本仓 → 先提本仓，再在消费方 bump submodule pin，分两个 PR**
+- 无 submodule、无 workspace（2026-09-14 起）：`pnpm install` 只装本包，CI 不再拉跨仓代码
 - 无构建步骤（`build` = `tsc --noEmit`），无测试框架 —— 唯一测试就是 `check-contract.mjs`
 - **发版流程**：改代码 → MR（`verify` 必须绿）→ 合入 main → `package.json` bump + CHANGELOG 补小节 → 打 tag `vX.Y.Z` → 自动 publish 到 Nexus。`v0.1.0` 之前无发布链路，`v0.2.0` 是首个可解析版本
 
 ## 协作纪律（硬性 · 2026-09-14 起）
+
 - **本仓只由唯一主对话管理**：任何写入动作（commit / push / tag / MR / 改 CI 变量 / Nexus 发布）只在主对话内执行
 - 其他 pi 会话、子代理、并行任务对本仓 **只读**；发现需要改动 → 上报主对话，不自己动手
 - 由来：2026-09-14 两个会话同时给本仓建发布链路（一个把 publish 写进本仓 CI，一个改成 include ai-kit 单源模板），
@@ -49,18 +53,22 @@
   均可从 `npm-group` 解析；`dist-tags.latest = 0.2.1`；消费方冒烟 `npm install @lieshoucloud/contract-types@0.2.1` → exit 0（30 个 `.ts` 落地）
 
 ## 待办
-- [ ] tarball 的 `devDependencies.@lieshoucloud/contract-config` 原样带 `workspace:*`
-      （模板用 `npm publish`，不重写 `workspace:` 协议；`pnpm publish` 会重写）。
-      消费方不受影响（依赖的 devDeps 永不被安装），但元数据不干净；要改就改 ai-kit 模板或走 `ci/prepublish.sh` 钩子
 - [ ] `include: ref: main` —— 发布逻辑钉在移动分支上；ai-kit 已有发布点 tag `release-2026-09`，但全组多个仓均写 `main`，要钉发布点是**全组统一动作**
 - [ ] `gen:api:admin` 产出 `src/generated.admin.ts`，该文件**不存在**（悬空脚本：要么删要么补产物）
 - [ ] `gen:api*` 硬编码 `localhost:9000` / `8084-8088`，换机即废；应走 env 或配置
 - [ ] 提交信息引用的 `docs/legalmind-ai-engine-arch.md` 不在仓内（外置文档，易失效）
 - [ ] 鸿蒙 `ark-contract-types` 分叉双轨 —— 归一还是承认，未决
 - [ ] 20 个消费仓**未切换**到 Nexus 依赖（现仍走 submodule pin + `workspace:*`）；要切就是另一个计划
-- [ ] `@lieshoucloud/contract-config` / `contract-api` 仍未发布到 Nexus → `lieshou-core-web` 的 release 门禁仍会被它们卡住
+- [ ] `@lieshoucloud/contract-config` 仍未发布到 Nexus —— **本仓已不再依赖它**（基线内联），但 `lieshou-core-web` / `ui` / `contract-api` 仍走 `open/config` submodule，其 release 门禁仍会被它卡
 
 ## 关键决策
+- 2026-09-14: **供应链切换**（本仓的上游依赖不再经 submodule/workspace）：
+  - 内联 `@lieshoucloud/contract-config` 的 TS 基线进 `tsconfig.json`（`tsc --showConfig` 与切换前 `compilerOptions` 逐键一致），
+    删 `open/config` submodule + `pnpm-workspace.yaml` + 该 devDep + CI 的 submodule/CI_JOB_TOKEN 三步
+  - 新增 `.npmrc`（scope-only）：`@lieshoucloud:registry=…/npm-group/`；公共包仍走默认源
+  - 依据：已迁移的 app-desktop / mobile-web / mini-program **都是内联基线 + 删 submodule**（无一个依赖 contract-config）；
+    且全组无任何**已发布包**依赖它（contract-api → 仅 i18n），contract-config 自己 CI 明写「不发布 npm 制品」。
+    副产品：tarball 不再带 `devDependencies: workspace:*`（已发的 0.2.1 元数据仍带，无需回修）
 - 2026-08-26: 自 `LieShouCloud-web/types` 拆出独立契约仓（初名 `@lieshoucloud/types`，后定名 `contract-types`），挂 `open/config`
 - 2026-08-29: tag `upstream-unify-2026-08` / `edition-unify-2026-08` —— Edition 类型跨 5 端统一为唯一事实源，端内删除副本
 - 2026-09: `.gitmodules` 内网/GitHub URL → 自建 GitLab（`d10ffb2` / `19f7ad8`）
