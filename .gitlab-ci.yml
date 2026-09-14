@@ -1,23 +1,18 @@
-# lieshou-contract-types 质量门禁 + 制品发布（GitLab CI · 2026-09）
-#
-# 由来：.github/workflows/ci.yml 在内网 GitLab 上**不触发**（本仓 origin 只有 GitLab），
-#       本文件把它平移过来（对齐 lieshou-ui / lieshou-i18n / lieshou-core-web 的同一动作）。
-#
-# 前置（组级 docker runner：java-maven @ wqc-server-dell，tags: java,wqc）：
-#   - 挂卷 /srv/gitlab-runner-cache/m2 → /root/.m2，内含 caddy-root.crt（内网 Caddy 自签 CA）
-#   - runner 只给 gitlab.ts.huntercat.cn 配了 extra_hosts，nexus 域名容器内不解析 → 见 before_script
-#   - 发布凭证 = 项目 CI 变量 NEXUS_DEPLOY_USER / NEXUS_DEPLOY_PASS（masked + protected）
-#     ⚠️ protected 变量要求 protected tag；本仓已配 Protected Tag `v*`
-#
-# ⚠️ 不要在这里设 PATH / PNPM_HOME：CI 变量会注入 helper 容器，`PATH: "/x:$PATH"` 里的 $PATH
-#    被 GitLab 展开成空 → helper 找不到自己的 gitlab-runner-build，prepare 阶段 exit 127。
-#    corepack enable 会把 pnpm shim 装到已在 PATH 上的 /usr/local/bin，无需改 PATH。
-# ⚠️ 不用 GitLab CI cache：runner 侧已有 /srv/gitlab-runner-cache/m2 挂载卷（对齐端仓结论）。
+# lieshou-contract-types —— L0 契约（TS 类型 + 生成物）质量门禁
+# 制品发布（tag v* → 内网 Nexus npm-hosted）统一走 ai-kit 模板，**不要在本仓复制一份**：
+#   huntercat-digital/huntercat-ai-kit → /ci/npm-nexus.yml
+# 本仓特有的发布前门禁（CHANGELOG 必须写该版本小节）放 ci/prepublish.sh，由模板第一步调用。
+# 前置（wqc-server-dell 组级 docker runner，tags: wqc）：挂卷 /srv/gitlab-runner-cache/m2 → /root/.m2
+# （内含 caddy-root.crt）；项目 CI 变量 NEXUS_DEPLOY_USER / NEXUS_DEPLOY_PASS（masked + protected）
+# + protected tag v*。
+include:
+  - project: huntercat-digital/huntercat-ai-kit
+    ref: main
+    file: /ci/npm-nexus.yml
 
 stages: [verify, publish]
 
-# main 已设为受保护分支（push_access_level=0，无人可直推）→ 一律走特性分支 + MR。
-# 没有这段 workflow 时，推特性分支会生成「0 job」空 pipeline；分支与 MR 并存时还会重复跑两遍。
+# main 受保护（无人可直推）→ 一律特性分支 + MR。没有这段时分支与 MR 并存会重复跑两遍。
 workflow:
   rules:
     - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
@@ -27,31 +22,24 @@ workflow:
     - if: '$CI_COMMIT_TAG'
 
 variables:
-  # 内网 Caddy 自签证书：submodule 走 https://gitlab.ts.huntercat.cn（CI_JOB_TOKEN）时
-  # git 的 CAfile 是 none → "server certificate verification failed"（实测 job 2370）
-  GIT_SSL_NO_VERIFY: "true"
-  # helper 容器没有 ssh 二进制 → submodule 一律在 job 容器里自己拉（同 lieshou-standalone 结论）。
-  # 本仓唯一 submodule = open/config（@lieshoucloud/contract-config，tsconfig.json 依赖其 tsconfig.base.json）。
+  # helper 容器没有 ssh → submodule 在 job 容器里自己拉，URL 走 CI_JOB_TOKEN
   GIT_SUBMODULE_STRATEGY: none
   GIT_DEPTH: 0
-  NODE_EXTRA_CA_CERTS: /root/.m2/caddy-root.crt # node 不读系统信任库，走 nexus 时必须显式给
+  # submodule 走 https 时 git 的 CAfile 默认 none → 显式信任内网 CA（而不是关掉校验）
+  GIT_SSL_CAINFO: /root/.m2/caddy-root.crt
+  NODE_EXTRA_CA_CERTS: /root/.m2/caddy-root.crt
   NPM_REGISTRY: https://nexus.ts.huntercat.cn/repository/npm-group/
-  COREPACK_NPM_REGISTRY: https://nexus.ts.huntercat.cn/repository/npm-group/ # corepack 拉 pnpm 也走内网
 
 default:
-  image: node:22
-  tags: [java, wqc]
-
-before_script:
-  # ponytail: 硬编码内网 IP；runner config 给 nexus 补一条 extra_hosts 后本行可删
-  - grep -q nexus.ts.huntercat.cn /etc/hosts || echo "100.64.0.22 nexus.ts.huntercat.cn" >> /etc/hosts
-  # submodule URL 是 ssh://…:22220/…，helper/job 容器都没配 ssh 密钥 → 用 CI_JOB_TOKEN 走 HTTPS
-  - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ts.huntercat.cn/".insteadOf "ssh://git@gitlab.ts.huntercat.cn:22220/"
-  - git submodule sync --recursive
-  - git submodule update --init --recursive
-  - corepack enable && corepack prepare pnpm@9.12.0 --activate
-  - pnpm config set registry "$NPM_REGISTRY"
-  - pnpm install --frozen-lockfile
+  image: node:22-bookworm
+  tags: [wqc] # 组里唯一的 docker runner（wqc-server-dell）
+  before_script:
+    # 本仓唯一 submodule = open/config（@lieshoucloud/contract-config，tsconfig 依赖其 tsconfig.base.json）
+    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ts.huntercat.cn/".insteadOf "ssh://git@gitlab.ts.huntercat.cn:22220/"
+    - git submodule sync --recursive
+    - git submodule update --init --recursive
+    - corepack enable && corepack prepare pnpm@9.12.0 --activate
+    - pnpm install --frozen-lockfile
 
 verify:
   stage: verify
@@ -60,37 +48,10 @@ verify:
   script:
     - pnpm typecheck
     - pnpm lint
-    # 契约导出面一致性（= pnpm test，--strict）：index.ts 与 business/* 的导出必须与约定一致。
+    # 契约导出面一致性（= pnpm test --strict）：index.ts 与 business/* 的导出必须与约定一致。
     # 这是本仓唯一的"测试"，也是 20 个消费仓的公共 API 门禁 —— 不许跳过。
     - pnpm test
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH'
     - if: '$CI_COMMIT_TAG'
-
-# 制品发布：仅 tag vX.Y.Z 触发，发到内网 Nexus npm-hosted（地址见 package.json publishConfig）
-publish:
-  stage: publish
-  timeout: 15m
-  needs: [verify]
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
-  script:
-    - |
-      set -e
-      ver=$(node -p "require('./package.json').version")
-      # 门 1：tag 必须等于 package.json 版本，否则拒发（防 v0.3.0 下发成 0.2.0）
-      [ "$CI_COMMIT_TAG" = "v$ver" ] || { echo "❌ tag $CI_COMMIT_TAG 与 package.json v$ver 不一致（版本号单一事实源 = package.json）"; exit 1; }
-      # 门 2：CHANGELOG 必须有该版本小节（强制人写变更说明；破坏性变更须记 ### 破坏性变更）
-      grep -q "^## $ver" CHANGELOG.md || { echo "❌ CHANGELOG.md 缺少 \`## $ver\` 小节，先补变更说明再发版"; exit 1; }
-      # 门 3：凭证在位（protected + masked；非 protected tag 取不到值）
-      [ -n "$NEXUS_DEPLOY_USER" ] && [ -n "$NEXUS_DEPLOY_PASS" ] || { echo "❌ 缺 CI 变量 NEXUS_DEPLOY_USER / NEXUS_DEPLOY_PASS（需 protected tag v*）"; exit 1; }
-      echo "发布 @lieshoucloud/contract-types@$ver → Nexus npm-hosted"
-    # 凭证只落项目级 .npmrc（pnpm 会自动读项目根的 .npmrc；--userconfig 是 npm 旗标，pnpm 不认）
-    # 不落日志/仓库；files: ["src"] 也不会把它打进 tarball
-    - printf '//nexus.ts.huntercat.cn/repository/npm-hosted/:_auth=%s\nalways-auth=true\n' "$(printf '%s:%s' "$NEXUS_DEPLOY_USER" "$NEXUS_DEPLOY_PASS" | base64 -w0)" > "$CI_PROJECT_DIR/.npmrc"
-    # registry 由 package.json 的 publishConfig 指定（npm-hosted），不走默认 npm-group
-    - pnpm publish --no-git-checks
-    - rm -f "$CI_PROJECT_DIR/.npmrc"
-    # 门 4：发完立刻从 npm-group 回读，确认消费方真能解析到（发布成功 ≠ 消费方能装）
-    - npm view "@lieshoucloud/contract-types@$ver" version --registry "$NPM_REGISTRY"
