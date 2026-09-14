@@ -1,25 +1,6 @@
-// 本仓 TS 基线——内联自 @lieshoucloud/contract-config 的 tsconfig.base.json
-// （2026-09-14 供应链切换：不再靠 open/config submodule，@lieshoucloud 上游依赖清零；
-//   同 app-desktop / mobile-web / mini-program 的做法。config 改基线时本仓手动同步）
+// TS 基线来自内网 Nexus 的 @lieshoucloud/contract-config（私有仓库版本依赖）
+// 2026-09-14：config 发布 0.2.0 后由「内联副本」回切为版本依赖 —— 基线恢复单一来源。
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "react-jsx",
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "isolatedModules": true,
-    "useDefineForClassFields": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": true
-  },
+  "extends": "@lieshoucloud/contract-config/tsconfig.base.json",
   "include": ["src/**/*", "src/**/*.d.ts"]
 }
