@@ -27,6 +27,9 @@ workflow:
     - if: '$CI_COMMIT_TAG'
 
 variables:
+  # 内网 Caddy 自签证书：submodule 走 https://gitlab.ts.huntercat.cn（CI_JOB_TOKEN）时
+  # git 的 CAfile 是 none → "server certificate verification failed"（实测 job 2370）
+  GIT_SSL_NO_VERIFY: "true"
   # helper 容器没有 ssh 二进制 → submodule 一律在 job 容器里自己拉（同 lieshou-standalone 结论）。
   # 本仓唯一 submodule = open/config（@lieshoucloud/contract-config，tsconfig.json 依赖其 tsconfig.base.json）。
   GIT_SUBMODULE_STRATEGY: none
