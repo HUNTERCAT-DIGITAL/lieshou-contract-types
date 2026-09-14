@@ -153,4 +153,17 @@ export interface EditionConfig {
   layout?: ComponentType<{ children?: ReactNode }>;
   /** 登录后默认落地页（客户版指向客户工作台） */
   homePath?: string;
+  /**
+   * 站内通知数据源（**版别声明**，避免跨产品运行时探测 —— 2026-09-14）.
+   *
+   * <p>背景：`NotificationBell` 原先无条件先探 `/api/legal/notifications` 再回退 iot，导致
+   * 电网（dwjk）等无 legal 服务的环境每次加载都发一次 503 探测。
+   *
+   * <ul>
+   *   <li>{@code 'iot'}：只用 `/api/iot/notifications`（如 dwjk 电网）
+   *   <li>{@code 'legal'}：只用 `/api/legal/notifications`（如智法云枢）
+   *   <li>未声明：保留旧行为（先探 legal，失败回退 iot），向后兼容
+   * </ul>
+   */
+  notifications?: { source?: 'iot' | 'legal' };
 }
