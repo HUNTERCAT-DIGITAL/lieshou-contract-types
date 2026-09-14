@@ -45,11 +45,14 @@
 - CI = `.gitlab-ci.yml`（GitLab CI）：本仓只留 `verify`（install + typecheck + lint + check-contract）；
   **publish job 由 ai-kit 单源模板提供**（`include: huntercat-digital/huntercat-ai-kit → /ci/npm-nexus.yml`，禁止在本仓复制一份），
   仓特异发布前门禁放 `ci/prepublish.sh`（模板第一步调用）。runner = `wqc-server-dell` docker（tags `wqc`）
-- 发布实证：`@lieshoucloud/contract-types@0.2.0` 可从 `npm-group` 解析（31 文件 / 288.5 kB 解包 / 无 submodule 泄漏）
+- 发布实证：`@lieshoucloud/contract-types@0.2.0`（本仓临时 job）与 **`0.2.1`（ai-kit 单源模板：pipeline 754 / job 2437）**
+  均可从 `npm-group` 解析；`dist-tags.latest = 0.2.1`；消费方冒烟 `npm install @lieshoucloud/contract-types@0.2.1` → exit 0（30 个 `.ts` 落地）
 
 ## 待办
-- [ ] **模板路径的 publish 从未在本仓执行过**：0.2.0 是用本仓临时 publish job 发的；重打同 tag 会被 Nexus 以“版本已存在”拒。下一版（0.2.1/0.3.0）发版时盯日志确认模板跑通
-- [ ] `include: ref: main` —— 发布逻辑钉在移动分支上；ai-kit 已有发布点 tag `release-2026-09`，但全组 7 仓均写 `main`，要钉发布点是**全组统一动作**
+- [ ] tarball 的 `devDependencies.@lieshoucloud/contract-config` 原样带 `workspace:*`
+      （模板用 `npm publish`，不重写 `workspace:` 协议；`pnpm publish` 会重写）。
+      消费方不受影响（依赖的 devDeps 永不被安装），但元数据不干净；要改就改 ai-kit 模板或走 `ci/prepublish.sh` 钩子
+- [ ] `include: ref: main` —— 发布逻辑钉在移动分支上；ai-kit 已有发布点 tag `release-2026-09`，但全组多个仓均写 `main`，要钉发布点是**全组统一动作**
 - [ ] `gen:api:admin` 产出 `src/generated.admin.ts`，该文件**不存在**（悬空脚本：要么删要么补产物）
 - [ ] `gen:api*` 硬编码 `localhost:9000` / `8084-8088`，换机即废；应走 env 或配置
 - [ ] 提交信息引用的 `docs/legalmind-ai-engine-arch.md` 不在仓内（外置文档，易失效）
@@ -63,6 +66,8 @@
 - 2026-09: `.gitmodules` 内网/GitHub URL → 自建 GitLab（`d10ffb2` / `19f7ad8`）
 - 2026-09-14: **版本管理四道门**（首发前确立）—— tag 必须 = `v<package.json version>`；`CHANGELOG.md` 必须有该版本小节；CI 变量 `NEXUS_DEPLOY_*` 在位；发布后从 `npm-group` 回读校验。**删/改 `business/*` 导出符号 = 破坏性变更**，必须记 `### 破坏性变更`
 - 2026-09-14: **首发 0.2.0**（跳过 0.1.0：该 tag 从未分发，保留作历史标记，同 framework『0.3.0 从未分发』先例）；`package.json` 增 `files: ["src"]`（否则 submodule 目录会被卷进 tarball）、移除 `private`（否则拒发）
+- 2026-09-14: **0.2.1 = 冒烟发布**（`src/` 与 0.2.0 完全相同）—— 目的就是验明切换后的 ai-kit 模板 publish 路径可用，
+  不把一条从未执行过的发布链路当作已完成
 - 2026-09-14: CI 由 GitHub Actions 平移到 GitLab CI，删除 `.github/workflows/ci.yml`（不触发的死文件，对齐 i18n/charts 先例）
 - 2026-09-14: 本仓加入 `lieshou-contract-config` 的 **CI_JOB_TOKEN 入站白名单**（跨仓 submodule 克隆必需，ui/core-web 早已在列）
 - 2026-09-14: **publish 改走 ai-kit 单源模板**（`/ci/npm-nexus.yml`，全组 7 仓统一），本仓不再复制一份；
