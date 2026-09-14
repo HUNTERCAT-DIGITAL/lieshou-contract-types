@@ -33,20 +33,29 @@
 - 无构建步骤（`build` = `tsc --noEmit`），无测试框架 —— 唯一测试就是 `check-contract.mjs`
 - **发版流程**：改代码 → MR（`verify` 必须绿）→ 合入 main → `package.json` bump + CHANGELOG 补小节 → 打 tag `vX.Y.Z` → 自动 publish 到 Nexus。`v0.1.0` 之前无发布链路，`v0.2.0` 是首个可解析版本
 
+## 协作纪律（硬性 · 2026-09-14 起）
+- **本仓只由唯一主对话管理**：任何写入动作（commit / push / tag / MR / 改 CI 变量 / Nexus 发布）只在主对话内执行
+- 其他 pi 会话、子代理、并行任务对本仓 **只读**；发现需要改动 → 上报主对话，不自己动手
+- 由来：2026-09-14 两个会话同时给本仓建发布链路（一个把 publish 写进本仓 CI，一个改成 include ai-kit 单源模板），
+  后者合并时覆盖前者 —— 保护分支下靠 MR 才发现（同 `lieshou-charts` 已记录的同一事故）
+
 ## 当前阶段
-- 现役平台仓（时代二），最后提交 2026-09-12；tag `v0.2.0` @2026-09-14 = **首个分发到内网 Nexus 的版本**
-- `main` 已绿：`pnpm typecheck` / `pnpm lint` / `pnpm test`（`check-contract --strict`）在 CI 上全绿（pipeline 703/702 实测）
-- CI/CD = `.gitlab-ci.yml`（GitLab CI，2026-09-14 建）：`verify`（typecheck + lint + check-contract）+ `publish`（**仅 `v*` tag** → Nexus `npm-hosted`）；runner = `java-maven @ wqc-server-dell`（tags `java,wqc`）
+- 现役平台仓（时代二）；tag `v0.2.0` @2026-09-14 = **首个分发到内网 Nexus 的版本**
+- `main` 已绿：`pnpm typecheck` / `pnpm lint` / `pnpm test`（`check-contract --strict`）在 CI 上全绿（pipeline 729/717/711 实测）
+- CI = `.gitlab-ci.yml`（GitLab CI）：本仓只留 `verify`（install + typecheck + lint + check-contract）；
+  **publish job 由 ai-kit 单源模板提供**（`include: huntercat-digital/huntercat-ai-kit → /ci/npm-nexus.yml`，禁止在本仓复制一份），
+  仓特异发布前门禁放 `ci/prepublish.sh`（模板第一步调用）。runner = `wqc-server-dell` docker（tags `wqc`）
 - 发布实证：`@lieshoucloud/contract-types@0.2.0` 可从 `npm-group` 解析（31 文件 / 288.5 kB 解包 / 无 submodule 泄漏）
 
 ## 待办
+- [ ] **模板路径的 publish 从未在本仓执行过**：0.2.0 是用本仓临时 publish job 发的；重打同 tag 会被 Nexus 以“版本已存在”拒。下一版（0.2.1/0.3.0）发版时盯日志确认模板跑通
+- [ ] `include: ref: main` —— 发布逻辑钉在移动分支上；ai-kit 已有发布点 tag `release-2026-09`，但全组 7 仓均写 `main`，要钉发布点是**全组统一动作**
 - [ ] `gen:api:admin` 产出 `src/generated.admin.ts`，该文件**不存在**（悬空脚本：要么删要么补产物）
 - [ ] `gen:api*` 硬编码 `localhost:9000` / `8084-8088`，换机即废；应走 env 或配置
 - [ ] 提交信息引用的 `docs/legalmind-ai-engine-arch.md` 不在仓内（外置文档，易失效）
 - [ ] 鸿蒙 `ark-contract-types` 分叉双轨 —— 归一还是承认，未决
 - [ ] 20 个消费仓**未切换**到 Nexus 依赖（现仍走 submodule pin + `workspace:*`）；要切就是另一个计划
 - [ ] `@lieshoucloud/contract-config` / `contract-api` 仍未发布到 Nexus → `lieshou-core-web` 的 release 门禁仍会被它们卡住
-- [ ] `lieshou-charts/.gitlab-ci.yml` 的 publish 用的同一行 `pnpm publish --no-git-checks --userconfig`（pnpm 不认该旗标，同样会失败）—— 未验证，疑同源故障
 
 ## 关键决策
 - 2026-08-26: 自 `LieShouCloud-web/types` 拆出独立契约仓（初名 `@lieshoucloud/types`，后定名 `contract-types`），挂 `open/config`
@@ -56,3 +65,5 @@
 - 2026-09-14: **首发 0.2.0**（跳过 0.1.0：该 tag 从未分发，保留作历史标记，同 framework『0.3.0 从未分发』先例）；`package.json` 增 `files: ["src"]`（否则 submodule 目录会被卷进 tarball）、移除 `private`（否则拒发）
 - 2026-09-14: CI 由 GitHub Actions 平移到 GitLab CI，删除 `.github/workflows/ci.yml`（不触发的死文件，对齐 i18n/charts 先例）
 - 2026-09-14: 本仓加入 `lieshou-contract-config` 的 **CI_JOB_TOKEN 入站白名单**（跨仓 submodule 克隆必需，ui/core-web 早已在列）
+- 2026-09-14: **publish 改走 ai-kit 单源模板**（`/ci/npm-nexus.yml`，全组 7 仓统一），本仓不再复制一份；
+  CHANGELOG 门禁随之下沉到 `ci/prepublish.sh`（模板的仓特异钩子）。四道门未减：tag↔version 与凭证/回读在模板，CHANGELOG 在钩子
