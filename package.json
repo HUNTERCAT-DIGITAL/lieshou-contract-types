@@ -1,10 +1,15 @@
 {
   "name": "@lieshoucloud/contract-types",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.2.0",
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "files": [
+    "src"
+  ],
+  "publishConfig": {
+    "registry": "https://nexus.ts.huntercat.cn/repository/npm-hosted/"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./business/*": "./src/business/*.ts"
