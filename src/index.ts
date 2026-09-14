@@ -53,19 +53,29 @@ export * from "./business/audit";
 export * from "./business/auth";
 export * from "./business/contact";
 export * from "./business/contract";
-export * from "./business/finance";
 export * from "./business/inventory";
 export * from "./business/iot";
 export * from "./business/lead";
 export * from "./business/member";
 export * from "./business/menu";
+export * from "./business/org";
 export * from "./business/quality";
 export * from "./business/role";
 export * from "./business/supply";
 export * from "./business/tenant";
 
-// —— 含同名符号（STATUS_META / ContactLetter / LetterStatus / LETTER_STATUS_META）的模块：
+// —— 含同名符号（STATUS_META / ContactLetter / LetterStatus / LETTER_STATUS_META / Ledger*）的模块：
 //    显式导出，冲突符号不导出（需用时走深路径 @lieshoucloud/contract-types/business/<module>） ——
+
+// finance：LedgerType / LedgerEntry / LEDGER_TYPE_META 与 legal.ts 同名，故显式白名单（有效导出集与原 `export *` 一致）
+export type {
+  LedgerSummary,
+  MonthlySummary,
+  CreateLedgerRequest,
+  UpdateLedgerRequest,
+} from "./business/finance";
+export { LEDGER_CATEGORIES } from "./business/finance";
+
 export type { CustomerStatus, Customer, CreateCustomerRequest, UpdateCustomerRequest } from "./business/customer";
 export type { DispatchStatus, DispatchRecord, CreateDispatchRequest } from "./business/dispatch";
 export { formatSlot } from "./business/dispatch";
@@ -199,5 +209,83 @@ export type {
   GOV_STATUS_META,
   GOV_SEVERITY_META,
   GOV_CATEGORY_OPTIONS,
+  DocumentTemplate,
+  DocumentTemplateStatus,
+  DocumentTemplateRequest,
+  LegalArchive,
+  LegalArchiveRequest,
+  ArchiveSummary,
+  AnalyticsTrendRow,
+  AnalyticsLawyerRow,
+  AnalyticsDashboard,
+  TimeEntryReportDayRow,
+  TimeEntryReportCaseRow,
+  TimeEntryReportItem,
+  TimeEntryReport,
+  AssignmentStatus,
+  CaseAssignment,
+  AssignmentRequest,
+  SeatCode,
+  CaseRole,
+  CaseRoleRequest,
+  FlowKind,
+  FlowStatus,
+  KnowledgeFlow,
+  KnowledgeFlowRequest,
+  KnowledgeFlowAdvanceRequest,
+  LedgerStatus,
+  LedgerRequest,
+  AgentCode,
+  AiLayer,
+  SuggestionKind,
+  SuggestionStatus,
+  AiSession,
+  AiSessionRequest,
+  AiSessionLayerRequest,
+  AiSuggestion,
+  AiSuggestionRequest,
+  AiSuggestionHandleRequest,
+  ReviewArtifactType,
+  ReviewStatus,
+  LegalReview,
+  ReviewRequest,
+  ReviewDecisionRequest,
+  LegalArticle,
+  ArticleStatus,
+  ArticleRequest,
+  ArticleSummary,
+  ConsultTicket,
+  ConsultStatus,
+  ConsultSubmitRequest,
+  ConsultProcessRequest,
+  ConsultSummary,
+  AiMessage,
+  AiSendMessageRequest,
+  WorkDomain,
+  ConversationTargetType,
+  ConversationParticipant,
+  ConversationDraft,
+  ActivityEventType,
+  ActivityEvent,
+  TimeEntryDraftPayload,
 } from "./business/legal";
-export { stageIndex, healthTone, minuteToTime, formatDateCN } from "./business/legal";
+export {
+  stageIndex,
+  healthTone,
+  minuteToTime,
+  formatDateCN,
+  DOCUMENT_TEMPLATE_STATUS_META,
+  ASSIGNMENT_STATUS_META,
+  SEAT_META,
+  FLOW_KIND_META,
+  FLOW_STATUS_META,
+  LEDGER_STATUS_META,
+  AGENT_META,
+  AI_LAYER_META,
+  SUGGESTION_KIND_META,
+  SUGGESTION_STATUS_META,
+  REVIEW_ARTIFACT_META,
+  REVIEW_STATUS_META,
+  ARTICLE_STATUS_META,
+  CONSULT_STATUS_META,
+} from "./business/legal";
