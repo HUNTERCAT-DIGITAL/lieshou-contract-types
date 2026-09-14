@@ -9,8 +9,8 @@
 - 仓库: gitlab.ts.huntercat.cn/huntercat-digital/lieshou-contract-types（默认 main，**受保护**：push_access_level=0，一律走分支 + MR；protected tag `v*`）
 - 技术栈: TypeScript 5.6 strict · eslint 9 · 运行时依赖仅 `dayjs`；`@types/react` 只用于类型（`business/edition.ts` 的 `ComponentType`/`ReactNode`）
 - 上游: **无独立上游仓 —— 本仓即上游。** 2026-08-26 自时代一 GitHub `LieShouCloud-web/types` 拆出（首提交 `feat: 前端 types 层仓初始化——自 LieShouCloud-web/types 拆分`）。
-- 供应链: **@lieshoucloud 上游依赖清零**（2026-09-14）—— 原先靠 `open/config` submodule 取 TS 基线，现基线已内联进本仓 `tsconfig.json`；
-  `.npmrc` 只 pin `@lieshoucloud:registry=…/npm-group/`（将来加同 scope 依赖自动走 Nexus，公共包仍走默认源）
+- 供应链: **上游依赖全部走内网 Nexus 私有仓库版本**（2026-09-14）—— `open/config` submodule 已删，
+  TS 基线改为 devDep `@lieshoucloud/contract-config@^0.2.0`（从 npm-group 解析）；`.npmrc` 只 pin `@lieshoucloud:registry=…/npm-group/`
 
 ## 架构速览
 三块，全在 `src/`（约 10.4k 行）：
@@ -59,16 +59,15 @@
 - [ ] 提交信息引用的 `docs/legalmind-ai-engine-arch.md` 不在仓内（外置文档，易失效）
 - [ ] 鸿蒙 `ark-contract-types` 分叉双轨 —— 归一还是承认，未决
 - [ ] 20 个消费仓**未切换**到 Nexus 依赖（现仍走 submodule pin + `workspace:*`）；要切就是另一个计划
-- [ ] `@lieshoucloud/contract-config` 仍未发布到 Nexus —— **本仓已不再依赖它**（基线内联），但 `lieshou-core-web` / `ui` / `contract-api` 仍走 `open/config` submodule，其 release 门禁仍会被它卡
+- [ ] `ui` / `ui-native` / `core-web` / `app-admin-web` / `app-mobile` 仍走 `open/*` submodule + `workspace:*`，未切 Nexus（所需包已全部发布）
 
 ## 关键决策
 - 2026-09-14: **供应链切换**（本仓的上游依赖不再经 submodule/workspace）：
-  - 内联 `@lieshoucloud/contract-config` 的 TS 基线进 `tsconfig.json`（`tsc --showConfig` 与切换前 `compilerOptions` 逐键一致），
-    删 `open/config` submodule + `pnpm-workspace.yaml` + 该 devDep + CI 的 submodule/CI_JOB_TOKEN 三步
+  - 删 `open/config` submodule + `pnpm-workspace.yaml` + CI 的 submodule/`CI_JOB_TOKEN` 三步
+  - TS 基线先内联（当时 `contract-config` 未发布），**同日 config 发布 0.2.0 后回切为版本依赖**
+    `@lieshoucloud/contract-config@^0.2.0`（发布版 `tsconfig.base.json` 与本仓内联值逐键一致，三次 `tsc --showConfig` 均等价）
   - 新增 `.npmrc`（scope-only）：`@lieshoucloud:registry=…/npm-group/`；公共包仍走默认源
-  - 依据：已迁移的 app-desktop / mobile-web / mini-program **都是内联基线 + 删 submodule**（无一个依赖 contract-config）；
-    且全组无任何**已发布包**依赖它（contract-api → 仅 i18n），contract-config 自己 CI 明写「不发布 npm 制品」。
-    副产品：tarball 不再带 `devDependencies: workspace:*`（已发的 0.2.1 元数据仍带，无需回修）
+  - 副产品：tarball 不再带 `devDependencies: workspace:*`（已发的 0.2.1 元数据仍带，无需回修）
 - 2026-08-26: 自 `LieShouCloud-web/types` 拆出独立契约仓（初名 `@lieshoucloud/types`，后定名 `contract-types`），挂 `open/config`
 - 2026-08-29: tag `upstream-unify-2026-08` / `edition-unify-2026-08` —— Edition 类型跨 5 端统一为唯一事实源，端内删除副本
 - 2026-09: `.gitmodules` 内网/GitHub URL → 自建 GitLab（`d10ffb2` / `19f7ad8`）
