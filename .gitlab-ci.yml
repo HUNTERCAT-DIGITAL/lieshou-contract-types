@@ -22,22 +22,17 @@ workflow:
     - if: '$CI_COMMIT_TAG'
 
 variables:
-  # helper 容器没有 ssh → submodule 在 job 容器里自己拉，URL 走 CI_JOB_TOKEN
-  GIT_SUBMODULE_STRATEGY: none
   GIT_DEPTH: 0
-  # submodule 走 https 时 git 的 CAfile 默认 none → 显式信任内网 CA（而不是关掉校验）
-  GIT_SSL_CAINFO: /root/.m2/caddy-root.crt
+  # 内网 Caddy 自签 CA：node（npm/pnpm 走 Nexus）不读系统信任库，必须显式给
   NODE_EXTRA_CA_CERTS: /root/.m2/caddy-root.crt
   NPM_REGISTRY: https://nexus.ts.huntercat.cn/repository/npm-group/
 
 default:
   image: node:22-bookworm
   tags: [wqc] # 组里唯一的 docker runner（wqc-server-dell）
+  # 本仓已无 submodule（2026-09-14 供应链切换：open/config 改为内联 TS 基线，
+  # 不再需要 CI_JOB_TOKEN 拉跨仓 submodule，也不再依赖 contract-config 的白名单）
   before_script:
-    # 本仓唯一 submodule = open/config（@lieshoucloud/contract-config，tsconfig 依赖其 tsconfig.base.json）
-    - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.ts.huntercat.cn/".insteadOf "ssh://git@gitlab.ts.huntercat.cn:22220/"
-    - git submodule sync --recursive
-    - git submodule update --init --recursive
     - corepack enable && corepack prepare pnpm@9.12.0 --activate
     - pnpm install --frozen-lockfile
 
