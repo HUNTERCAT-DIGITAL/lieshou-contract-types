@@ -6,6 +6,16 @@
 > 格式：`## <版本>（YYYY-MM-DD）` → `### 破坏性变更` / `### 新增` / `### 修复`。
 > CI 强制：tag `vX.Y.Z` 必须等于 `package.json` 版本，且本文件必须有对应 `## X.Y.Z` 小节，否则拒发。
 
+## 0.2.1（2026-09-14）
+
+### 说明
+- **`src/` 与 0.2.0 完全相同**（无新增/修改/删除导出符号，消费方无需适配）。
+  本版存在的唯一目的：把 publish 链路从「本仓临时 job」切换到 **ai-kit 单源模板**
+  （`include: huntercat-digital/huntercat-ai-kit → /ci/npm-nexus.yml` + `ci/prepublish.sh`）后
+  **实跑一次验明可用**（对齐 ai-kit 模板文档的“冒烟验证”要求）。
+- 发布门禁未变：tag `v0.2.1` == `package.json` 版本；`CHANGELOG.md` 有本小节（`ci/prepublish.sh` 强制）；
+  发布后从 `npm-group` 回读。
+
 ## 0.2.0（2026-09-14）
 
 ### 新增
