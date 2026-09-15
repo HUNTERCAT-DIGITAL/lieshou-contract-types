@@ -292,7 +292,7 @@ export interface TimeEntry {
   createdAt: string;
   /** 记录来源（2026-09 计时被动化 · additive）：MANUAL 手动录入 / AUTO 行为捕捉 */
   source?: "MANUAL" | "AUTO";
-  /** 被动计时的时段切片 id（capture slice · S2 落库，见 docs/legalmind-ai-engine-arch.md §3） */
+  /** 被动计时的时段切片 id（capture slice · S2 落库，见 docs/legal-ai-engine-arch.md §3） */
   sliceId?: number | null;
   /** 归因事件指纹（审计挂 G8 哈希链） */
   fromEventIds?: string[] | null;
@@ -1608,7 +1608,7 @@ export interface AiSendMessageRequest {
 
 // ============================================================
 // 律时 · Conversation Engine 契约草案（2026-09-05 · arch S1 · additive · 待 S2 评审消费）
-// 关联：docs/legalmind-ai-engine-arch.md（本仓）；现 AiSession（单 owner + caseId）=
+// 关联：docs/legal-ai-engine-arch.md（本仓）；现 AiSession（单 owner + caseId）=
 // participants=[owner×PERSONAL]、target=CASE 的特例，本草案不破坏现有消费方。
 // ============================================================
 
