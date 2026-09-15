@@ -137,17 +137,17 @@ export interface EditionConfig {
   extraRoutes?: EditionExtraRoute[];
   /** 裁剪底部 tab */
   hiddenTabs?: string[];
-  /** 品牌主色（antd/端主题色值 · 2026-08 客户字段上收，如 dwjk #02429B） */
+  /** 品牌主色（antd/端主题色值 · 2026-08 客户字段上收；色值由客户仓注入） */
   primaryColor?: string;
   /** 门户副文案（登录/门户页 hero 描述） */
   heroDesc?: string;
   /** 门户页配置（产品介绍/功能/多端入口） */
   portal?: EditionPortal;
-  /** 菜单路径裁剪（后台端隐藏非本客户业务菜单 · 如 dwjk 隐藏 CRM/财务） */
+  /** 菜单路径裁剪（后台端隐藏非本客户业务菜单；具体菜单由客户仓声明） */
   hiddenMenus?: string[];
   /** 顶栏快捷入口（如「驾驶舱」大屏按钮，渲染在顶部右侧 · 2026-09-01） */
   headerActions?: Array<{ label: string; path: string }>;
-  /** 值班员控制台模式：登录直进工作台，只展示行业核心看板（dwjk 电网监控） */
+  /** 值班员控制台模式：登录直进工作台，只展示行业核心看板（行业版别使用） */
   dutyConsole?: boolean;
   /** 业务布局壳覆盖（缺省 = 端内 ConsoleLayout；客户可注入自绘壳，如三空间工作台 OS） */
   layout?: ComponentType<{ children?: ReactNode }>;
@@ -157,11 +157,11 @@ export interface EditionConfig {
    * 站内通知数据源（**版别声明**，避免跨产品运行时探测 —— 2026-09-14）.
    *
    * <p>背景：`NotificationBell` 原先无条件先探 `/api/legal/notifications` 再回退 iot，导致
-   * 电网（dwjk）等无 legal 服务的环境每次加载都发一次 503 探测。
+   * 物联网等行业版别（无 legal 服务）的环境每次加载都发一次 503 探测。
    *
    * <ul>
-   *   <li>{@code 'iot'}：只用 `/api/iot/notifications`（如 dwjk 电网）
-   *   <li>{@code 'legal'}：只用 `/api/legal/notifications`（如智法云枢）
+   *   <li>{@code 'iot'}：只用 `/api/iot/notifications`（行业版别）
+   *   <li>{@code 'legal'}：只用 `/api/legal/notifications`（法律版别）
    *   <li>未声明：保留旧行为（先探 legal，失败回退 iot），向后兼容
    * </ul>
    */
