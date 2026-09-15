@@ -151,6 +151,25 @@ export interface EditionPrimaryEntry {
 }
 
 /**
+ * 个人中心自定义行（版别声明 · 客户功能入口挂到「我的」页）.
+ *
+ * <p>客户包页面（`extraRoutes` 声明的路由）需要从「我的」直达时，在此声明一行；
+ * 上游不预设行内容与语义，只负责渲染与跳转。未声明则不渲染。
+ */
+export interface EditionProfileRow {
+  /** 行标题 */
+  label: string;
+  /** 行副标题（右侧或次行小字） */
+  desc?: string;
+  /** 跳转路径（客户包已声明路由的 path，如 growth） */
+  path: string;
+  /** 图标（端内图标名） */
+  icon?: string;
+  /** 图标色（缺省用端内强调色变量） */
+  color?: string;
+}
+
+/**
  * 跨端 EditionConfig（2026-08 统一最小集）.
  * 各端/客户取所需字段；端级专有扩展（如 admin-web 门户卡片/行业装配）留在端内组合。
  */
@@ -211,4 +230,6 @@ export interface EditionConfig {
   productLine?: string;
   /** 产品线副标（产品线名下方一行 · 缺省回退 slogan ?? companyName） */
   productLineDesc?: string;
+  /** 个人中心自定义行（缺省不渲染 · 见 {@link EditionProfileRow}） */
+  profileRows?: EditionProfileRow[];
 }
