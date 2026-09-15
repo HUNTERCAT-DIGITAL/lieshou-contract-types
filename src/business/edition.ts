@@ -114,6 +114,43 @@ export interface EditionPortal {
 }
 
 /**
+ * 顶栏工作空间切换器（版别声明 · 上游不预设语义，选项与文案由版别给）.
+ *
+ * <p>背景：工作空间（个人/团队/组织）是某些版别的行业语义，上游不该认识具体版别。
+ * 上游只提供机制（下拉 UI + 切换事件 + 可选持久化），选项文案与广播事件名由版别声明。
+ *
+ * <ul>
+ *   <li>未声明 {@code workspace}：不渲染切换器
+ *   <li>切换时广播 {@code CustomEvent(workspace.event ?? 'app:space', { detail: key })}，客户包监听消费
+ * </ul>
+ */
+export interface EditionWorkspace {
+  /** 选项（key 为广播负载，label 为展示文案，icon 为端内图标名） */
+  items: Array<{ key: string; label: string; icon?: string }>;
+  /** 初值（缺省取 items[0].key） */
+  defaultKey?: string;
+  /** 持久化键（localStorage · 缺省不持久化） */
+  storageKey?: string;
+  /** 切换广播的 CustomEvent 名（缺省 app:space） */
+  event?: string;
+}
+
+/**
+ * 底栏中部主入口（版别声明 · 客户自己的助手/中枢入口）.
+ *
+ * <p>机制同上：上游不预设入口叫什么、点了干什么。声明后在底栏 tab 为偶数且 ≥4 时插在正中；
+ * 底栏隐藏（详情/沉浸页）时降级为右下浮球。点击广播 {@code CustomEvent(event)}。
+ */
+export interface EditionPrimaryEntry {
+  /** 展示文案（如「助手」） */
+  label: string;
+  /** 图标（端内图标名 · 缺省 ai） */
+  icon?: string;
+  /** 点击广播的 CustomEvent 名（客户包监听） */
+  event: string;
+}
+
+/**
  * 跨端 EditionConfig（2026-08 统一最小集）.
  * 各端/客户取所需字段；端级专有扩展（如 admin-web 门户卡片/行业装配）留在端内组合。
  */
@@ -166,4 +203,12 @@ export interface EditionConfig {
    * </ul>
    */
   notifications?: { source?: 'iot' | 'legal' };
+  /** 顶栏工作空间切换器（缺省不渲染 · 见 {@link EditionWorkspace}） */
+  workspace?: EditionWorkspace;
+  /** 底栏中部主入口（缺省不渲染 · 见 {@link EditionPrimaryEntry}） */
+  primaryEntry?: EditionPrimaryEntry;
+  /** 产品线名（关于页标题 / 设置页脚 · 缺省回退 brandName） */
+  productLine?: string;
+  /** 产品线副标（产品线名下方一行 · 缺省回退 slogan ?? companyName） */
+  productLineDesc?: string;
 }
