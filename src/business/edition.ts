@@ -232,4 +232,15 @@ export interface EditionConfig {
   productLineDesc?: string;
   /** 个人中心自定义行（缺省不渲染 · 见 {@link EditionProfileRow}） */
   profileRows?: EditionProfileRow[];
+  /**
+   * 品牌主题：端内 CSS 自定义属性覆盖（版别声明）.
+   *
+   * <p>运行时注入到 `document.body.style`（键必须带 `--` 前缀），用于覆盖端内默认品牌变量。
+   * 端间变量集不同，故用开放字典而非固定 schema —— 新增一个端内变量不需要改契约。
+   *
+   * <p>已知键（mobile-web）：`--c-accent` 动作色 / `--c-accent-2` 渐变次端 / `--c-cta-bg`、
+   * `--c-cta-fg` 深底 CTA / `--c-deep-a`、`--c-deep-b` 深底渐变 / `--c-nav` 顶栏底。
+   * 未声明的键保持端内中性默认值。
+   */
+  theme?: Record<string, string>;
 }
