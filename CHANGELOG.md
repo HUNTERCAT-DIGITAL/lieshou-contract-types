@@ -6,6 +6,27 @@
 > 格式：`## <版本>（YYYY-MM-DD）` → `### 破坏性变更` / `### 新增` / `### 修复`。
 > CI 强制：tag `vX.Y.Z` 必须等于 `package.json` 版本，且本文件必须有对应 `## X.Y.Z` 小节，否则拒发。
 
+## 0.3.0（2026-09-15）
+
+### 新增
+- `EditionConfig` 增 4 个**版别声明字段**（全部可选 · 无破坏性变更，不声明则行为与 0.2.x 一致）：
+  - `workspace?: EditionWorkspace` —— 顶栏工作空间切换器。上游只提供机制（下拉 + 切换事件 + 可选持久化），
+    选项文案、持久化键、广播事件名由版别声明；未声明则不渲染。
+  - `primaryEntry?: EditionPrimaryEntry` —— 底栏中部主入口（客户助手/中枢入口）。声明后在 tab 为偶数且 ≥4 时
+    插在正中，底栏隐藏时降级为右下浮球；点击广播版别声明的事件名。
+  - `productLine?: string` / `productLineDesc?: string` —— 产品线名与副标（关于页标题 / 设置页脚），
+    缺省回退 `brandName` / `slogan ?? companyName`。
+
+  动机：客户端行业语义此前以「版别 id 字面量集合」形式写在端内（如 mobile-web 的 `clientFlavor.ts`），
+  上游因此认识具体客户。统一改为版别声明的同一模式（对齐 `notifications.source`）。
+
+### 修复
+- `business/edition.ts` 注释移除客户品牌名与客户主色值（上游仓洁净纪律：客户内容不入上游）。
+
+### 说明
+- 导出面**只增不减**（新增 `EditionWorkspace` / `EditionPrimaryEntry` 两个 interface），
+  `check-contract --strict` 通过；消费方无需适配即可升级。
+
 ## 0.2.1（2026-09-14）
 
 ### 说明
